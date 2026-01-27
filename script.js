@@ -1,212 +1,243 @@
-let league;
-let currentSortCol = 'id'; 
-let currentSortOrder = 'asc'; 
+/**
+ * League Master Logic (Clean UI & Alert)
+ */
+let masterData = JSON.parse(localStorage.getItem('league_db')) || {};
+let curId = null;
+let groupSortOptions = {}; 
 
-class MatrixLeague {
-    constructor(names, targetWins) {
-        this.names = names;
-        this.targetWins = targetWins;
-        this.results = {};
-        names.forEach(n1 => {
-            this.results[n1] = {};
-            names.forEach(n2 => {
-                if(n1 !== n2) this.results[n1][n2] = { s1: 0, s2: 0, done: false };
-            });
-        });
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('leagueDate').value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('prepareNamesBtn').addEventListener('click', prepareNames);
+    document.getElementById('startLeagueBtn').addEventListener('click', createNewLeague);
+    document.getElementById('saveDataBtn').addEventListener('click', saveToStorage);
+    document.getElementById('viewHistoryBtn').addEventListener('click', () => toggleLayer(true));
+    document.getElementById('closeLayerBtn').addEventListener('click', () => toggleLayer(false));
+    document.getElementById('leagueHistorySelector').addEventListener('change', (e) => loadLeague(e.target.value));
+    
+    updateHistorySelector();
+});
 
-    updateMatch(p1, p2, s1, s2) {
-        const isDone = (s1 > 0 || s2 > 0);
-        this.results[p1][p2] = { s1, s2, done: isDone };
-        this.results[p2][p1] = { s1: s2, s2: s1, done: isDone };
-        return isDone;
-    }
-
-    getTiedStats(playerName, tiedGroupNames) {
-        let tiedPoints = 0, tiedSetsWon = 0, tiedSetsLost = 0;
-        tiedGroupNames.forEach(oppName => {
-            if (playerName === oppName) return;
-            const m = this.results[playerName][oppName];
-            if (m && m.done) {
-                if (m.s1 > m.s2) tiedPoints += 2;
-                else tiedPoints += 1;
-                tiedSetsWon += m.s1; tiedSetsLost += m.s2;
-            }
-        });
-        return { points: tiedPoints, diff: tiedSetsWon - tiedSetsLost };
-    }
-
-    getRankedStats() {
-        const stats = this.names.map((name, index) => {
-            let res = { id: index + 1, name, wins: 0, losses: 0, setsWon: 0, setsLost: 0, points: 0 };
-            this.names.forEach(opp => {
-                if(name === opp) return;
-                const m = this.results[name][opp];
-                if(m.done) {
-                    res.setsWon += m.s1; res.setsLost += m.s2;
-                    if(m.s1 > m.s2) { res.wins++; res.points += 2; }
-                    else { res.losses++; res.points += 1; }
-                }
-            });
-            return res;
-        });
-
-        const sortedForRank = [...stats].sort((a, b) => {
-            if (b.points !== a.points) return b.points - a.points;
-            const tiedGroupNames = stats.filter(s => s.points === a.points).map(s => s.name);
-            if (tiedGroupNames.length >= 2) {
-                const aTied = this.getTiedStats(a.name, tiedGroupNames);
-                const bTied = this.getTiedStats(b.name, tiedGroupNames);
-                if (bTied.points !== aTied.points) return bTied.points - aTied.points;
-                if (bTied.diff !== aTied.diff) return bTied.diff - aTied.diff;
-            }
-            return (b.setsWon - b.setsLost) - (a.setsWon - a.setsLost);
-        });
-
-        let lastRank = 1;
-        sortedForRank.forEach((p, i) => {
-            if (i > 0) {
-                const prev = sortedForRank[i - 1];
-                const tiedGroup = stats.filter(s => s.points === p.points).map(s => s.name);
-                const pStats = this.getTiedStats(p.name, tiedGroup);
-                const prevStats = this.getTiedStats(prev.name, tiedGroup);
-                const isFullTie = p.points === prev.points && pStats.points === prevStats.points && 
-                                  pStats.diff === prevStats.diff && (p.setsWon - p.setsLost) === (prev.setsWon - prev.setsLost);
-                if (!isFullTie) lastRank = i + 1;
-            }
-            p.rank = lastRank;
-
-            const tiedNames = stats.filter(s => s.points === p.points).map(s => s.name);
-            const pStats = this.getTiedStats(p.name, tiedNames);
-            const next = sortedForRank[i+1];
-            const isNextTie = next && p.points === next.points && 
-                              pStats.points === this.getTiedStats(next.name, tiedNames).points && 
-                              pStats.diff === this.getTiedStats(next.name, tiedNames).diff && 
-                              (p.setsWon - p.setsLost) === (next.setsWon - next.setsLost);
-            const prev = i > 0 && sortedForRank[i-1];
-            const isPrevTie = prev && p.points === prev.points && 
-                              pStats.points === this.getTiedStats(prev.name, tiedNames).points && 
-                              pStats.diff === this.getTiedStats(prev.name, tiedNames).diff && 
-                              (p.setsWon - p.setsLost) === (prev.setsWon - prev.setsLost);
-            p.isTieHighlight = (isNextTie || isPrevTie);
-        });
-        return stats;
-    }
-}
-
-// 초기 로드 시 입력창 생성 실행
-window.onload = () => {
-    generateNameInputs();
-};
-
-// 입력창 생성 함수
-function generateNameInputs() {
-    const count = parseInt(document.getElementById('playerCount').value) || 0;
+// 1. 이름 입력창 생성
+function prepareNames() {
+    const gc = document.getElementById('groupCount').value;
+    const pc = document.getElementById('playerCount').value;
     const container = document.getElementById('nameInputs');
-    if (!container) return;
-    
     container.innerHTML = '';
-    for (let i = 1; i <= count; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'p-name';
-        input.placeholder = `선수 ${i}`;
-        container.appendChild(input);
-    }
-}
-
-// 리그 시작 버튼 이벤트
-document.getElementById('startBtn').onclick = () => {
-    const names = [...document.querySelectorAll('.p-name')].map(i => i.value.trim() || i.placeholder);
-    const ruleInput = document.querySelector('input[name="gameRule"]:checked');
-    if(!ruleInput) return alert("경기 방식을 선택해주세요.");
-    const targetWins = parseInt(ruleInput.value);
     
-    league = new MatrixLeague(names, targetWins);
-
-    document.querySelector('.config-group').style.display = 'none';
-    document.getElementById('setupSection').style.display = 'none';
-    document.getElementById('mainDashboard').style.display = 'grid';
-
-    document.getElementById('standingsTable').innerHTML = `
-        <thead>
-            <tr>
-                <th class="sortable" onclick="toggleSort('id')">등록번호</th>
-                <th>선수명</th>
-                <th>전적</th>
-                <th>득실차</th>
-                <th>승점</th>
-                <th class="sortable" onclick="toggleSort('rank')">순위</th>
-            </tr>
-        </thead>
-        <tbody></tbody>`;
-
-    document.getElementById('matrixHead').innerHTML = `<th class="matrix-name-col">선수명</th>` + names.map(n => `<th>${n}</th>`).join('');
-    const options = getOptions(targetWins);
-    document.getElementById('matrixBody').innerHTML = names.map(n1 => `
-        <tr>
-            <td class="matrix-name-col">${n1}</td>
-            ${names.map(n2 => {
-                if(n1 === n2) return `<td class="self-cell">/</td>`;
-                return `<td><select class="matrix-select" data-p1="${n1}" data-p2="${n2}" onchange="syncScore(this)">${options}</select></td>`;
-            }).join('')}
-        </tr>`).join('');
-
-    updateStandings();
-};
-
-function getOptions(max) {
-    let opt = `<option value="0:0">-</option>`;
-    for(let i=0; i<max; i++) opt += `<option value="${max}:${i}">${max}:${i}</option>`;
-    for(let i=0; i<max; i++) opt += `<option value="${i}:${max}">${i}:${max}</option>`;
-    return opt;
+    for (let i = 0; i < gc; i++) {
+        const gName = String.fromCharCode(65 + i) + "조";
+        let html = `
+            <div class="name-inputs-container">
+                <strong style="font-size: 1.2rem; color: var(--primary);">${gName} 명단 입력</strong>
+                <div class="name-inputs-grid">`;
+        for (let j = 1; j <= pc; j++) {
+            html += `<input type="text" class="p-name" data-group="${gName}" placeholder="${gName} 선수${j}">`;
+        }
+        html += `</div></div>`;
+        container.innerHTML += html;
+    }
+    document.getElementById('nameInputArea').classList.remove('hidden');
 }
 
-window.syncScore = (el) => {
-    const p1 = el.dataset.p1, p2 = el.dataset.p2;
-    const [s1, s2] = el.value.split(':').map(Number);
-    const isDone = league.updateMatch(p1, p2, s1, s2);
+// 2. 새 리그 생성
+function createNewLeague() {
+    const id = Date.now().toString();
+    const date = document.getElementById('leagueDate').value;
+    const title = document.getElementById('leagueTitle').value || "무제 대회";
+    const rule = parseInt(document.querySelector('input[name="gameRule"]:checked').value);
+
+    const league = { id, date, title, targetWins: rule, groups: {} };
     
-    updateCellStyle(el, el.closest('td'), s1, s2, isDone);
-    const oppSelect = document.querySelector(`.matrix-select[data-p1="${p2}"][data-p2="${p1}"]`);
-    if(oppSelect) {
-        oppSelect.value = `${s2}:${s1}`;
-        updateCellStyle(oppSelect, oppSelect.closest('td'), s2, s1, isDone);
-    }
-    updateStandings();
-};
-
-function updateCellStyle(selectEl, tdEl, s1, s2, isDone) {
-    selectEl.classList.remove('input-winner');
-    tdEl.classList.remove('cell-winner');
-    if (isDone && s1 > s2) {
-        tdEl.classList.add('cell-winner');
-        selectEl.classList.add('input-winner');
-    }
-}
-
-function updateStandings() {
-    let stats = league.getRankedStats();
-    stats.sort((a, b) => {
-        let valA = a[currentSortCol], valB = b[currentSortCol];
-        return (currentSortOrder === 'asc') ? valA - valB : valB - valA;
+    document.querySelectorAll('.p-name').forEach((el) => {
+        const g = el.dataset.group;
+        if (!league.groups[g]) league.groups[g] = { names: [], results: {}, playerIds: {} };
+        const pName = el.value || el.placeholder;
+        league.groups[g].names.push(pName);
+        league.groups[g].playerIds[pName] = league.groups[g].names.length;
     });
 
-    let anyMatchDone = stats.some(p => p.wins > 0 || p.losses > 0);
-    const tbody = document.querySelector('#standingsTable tbody');
-    tbody.innerHTML = stats.map(p => `
-        <tr class="${(anyMatchDone && p.isTieHighlight) ? 'tie-row' : ''}">
-            <td>${p.id}</td>
-            <td><strong>${p.name}</strong></td>
-            <td>${p.wins}승 ${p.losses}패</td>
-            <td>${p.setsWon - p.setsLost}</td>
-            <td style="color:blue; font-weight:bold;">${p.points}</td>
-            <td>${p.rank}</td>
+    for (let g in league.groups) {
+        const names = league.groups[g].names;
+        names.forEach(n1 => {
+            league.groups[g].results[n1] = {};
+            names.forEach(n2 => {
+                if (n1 !== n2) league.groups[g].results[n1][n2] = { s1: 0, s2: 0, done: false };
+            });
+        });
+        groupSortOptions[g] = { key: 'rank', order: 'asc' };
+    }
+
+    masterData[id] = league;
+    saveToStorage(true); // 처음 생성 시엔 무음 저장
+    loadLeague(id);
+}
+
+// 3. 데이터 로드 및 렌더링
+function loadLeague(id) {
+    if (!id) return;
+    curId = id;
+    const d = masterData[id];
+    
+    document.getElementById('setupArea').classList.add('hidden');
+    document.getElementById('activeControls').classList.remove('hidden');
+    document.getElementById('mainDashboard').classList.remove('hidden');
+
+    const container = document.getElementById('allGroupsContainer');
+    container.innerHTML = '';
+
+    Object.keys(d.groups).forEach(gn => {
+        if(!groupSortOptions[gn]) groupSortOptions[gn] = { key: 'rank', order: 'asc' };
+        container.innerHTML += `
+            <section class="group-section">
+                <div class="group-title">${gn}</div>
+                <div class="group-layout">
+                    <div class="matrix-section">
+                        <h3>📊 결과 입력 (Matrix)</h3>
+                        <table><thead id="head-${gn}"></thead><tbody id="body-${gn}"></tbody></table>
+                    </div>
+                    <div class="standing-section">
+                        <h3>🏅 순위표</h3>
+                        <table id="standings-${gn}">
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="handleSort('${gn}', 'id')">ID</th>
+                                    <th>이름</th><th>전적</th><th>득실</th><th>승점</th>
+                                    <th class="sortable" onclick="handleSort('${gn}', 'rank')">순위</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>`;
+        renderMatrix(gn);
+        updateStandings(gn);
+    });
+}
+
+function renderMatrix(gn) {
+    const d = masterData[curId];
+    const g = d.groups[gn];
+    document.getElementById(`head-${gn}`).innerHTML = `<th>선수</th>` + g.names.map(n => `<th>${n}</th>`).join('');
+    document.getElementById(`body-${gn}`).innerHTML = g.names.map(n1 => `
+        <tr>
+            <td style="font-weight:bold; background:#f8fafc;">${n1}</td>
+            ${g.names.map(n2 => {
+                if (n1 === n2) return `<td style="background:#f1f5f9;">-</td>`;
+                const res = g.results[n1][n2];
+                const win = res.done && res.s1 > res.s2;
+                return `<td class="${win ? 'cell-winner' : ''}">
+                    <select onchange="updateMatrixScore('${gn}','${n1}','${n2}',this.value)" class="matrix-select">
+                        ${getOptions(d.targetWins, `${res.s1}:${res.s2}`)}
+                    </select></td>`;
+            }).join('')}
         </tr>`).join('');
 }
 
-window.toggleSort = (col) => {
-    if (currentSortCol === col) currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
-    else { currentSortCol = col; currentSortOrder = 'asc'; }
-    updateStandings();
+function getOptions(max, current) {
+    let html = `<option value="0:0" ${current === '0:0' ? 'selected' : ''}>-</option>`;
+    for (let i = 0; i < max; i++) html += `<option value="${max}:${i}" ${current === `${max}:${i}` ? 'selected' : ''}>${max}:${i}</option>`;
+    for (let i = 0; i < max; i++) html += `<option value="${i}:${max}" ${current === `${i}:${max}` ? 'selected' : ''}>${i}:${max}</option>`;
+    return html;
+}
+
+window.updateMatrixScore = (gn, p1, p2, val) => {
+    const [s1, s2] = val.split(':').map(Number);
+    const g = masterData[curId].groups[gn];
+    g.results[p1][p2] = { s1, s2, done: (s1 > 0 || s2 > 0) };
+    g.results[p2][p1] = { s1: s2, s2: s1, done: (s1 > 0 || s2 > 0) };
+    renderMatrix(gn);
+    updateStandings(gn);
 };
+
+function updateStandings(gn) {
+    const g = masterData[curId].groups[gn];
+    let stats = g.names.map(name => {
+        let s = { id: g.playerIds[name], name, w: 0, l: 0, sW: 0, sL: 0, pts: 0 };
+        g.names.forEach(opp => {
+            if (name === opp) return;
+            const m = g.results[name][opp];
+            if (m.done) {
+                s.sW += m.s1; s.sL += m.s2;
+                if (m.s1 > m.s2) { s.w++; s.pts += 2; } else { s.l++; s.pts += 1; }
+            }
+        });
+        s.diff = s.sW - s.sL;
+        return s;
+    });
+
+    const ranked = [...stats].sort((a, b) => b.pts !== a.pts ? b.pts - a.pts : b.diff - a.diff);
+    ranked.forEach((p, i) => {
+        let r = i + 1;
+        if (i > 0 && p.pts === ranked[i - 1].pts && p.diff === ranked[i - 1].diff) r = ranked[i - 1].rank;
+        stats.find(x => x.name === p.name).rank = r;
+    });
+
+    const opt = groupSortOptions[gn];
+    stats.sort((a, b) => {
+        const vA = a[opt.key], vB = b[opt.key];
+        return opt.order === 'asc' ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
+    });
+
+    document.querySelector(`#standings-${gn} tbody`).innerHTML = stats.map(s => `
+        <tr>
+            <td>${s.id}</td><td><strong>${s.name}</strong></td>
+            <td>${s.w}승 ${s.l}패</td><td>${s.diff > 0 ? '+' + s.diff : s.diff}</td>
+            <td style="color:blue; font-weight:bold;">${s.pts}</td>
+            <td style="background:#f8fafc; font-weight:bold;">${s.rank}</td>
+        </tr>`).join('');
+}
+
+window.handleSort = (gn, key) => {
+    const opt = groupSortOptions[gn];
+    if (opt.key === key) opt.order = opt.order === 'asc' ? 'desc' : 'asc';
+    else { opt.key = key; opt.order = 'asc'; }
+    updateStandings(gn);
+};
+
+// --- 저장 및 알림 ---
+function saveToStorage(silent = false) {
+    if (!curId) return;
+    localStorage.setItem('league_db', JSON.stringify(masterData));
+    updateHistorySelector();
+    if (!silent) alert("✅ 모든 데이터가 브라우저에 안전하게 저장되었습니다.");
+}
+
+function toggleLayer(show) {
+    document.getElementById('listLayer').style.display = show ? 'flex' : 'none';
+    if (show) renderHistoryList();
+}
+
+function renderHistoryList() {
+    const container = document.getElementById('saveListContainer');
+    const keys = Object.keys(masterData).sort((a, b) => masterData[b].date.localeCompare(masterData[a].date));
+    
+    container.innerHTML = keys.map(id => `
+        <tr>
+            <td>${masterData[id].date}</td>
+            <td style="text-align:left; font-weight:bold;">${masterData[id].title}</td>
+            <td>
+                <button class="btn-sm btn-edit" onclick="handleEdit('${id}')">불러오기</button>
+                <button class="btn-sm btn-del" onclick="handleDelete('${id}')">삭제</button>
+            </td>
+        </tr>`).join('');
+}
+
+window.handleEdit = (id) => { toggleLayer(false); loadLeague(id); };
+window.handleDelete = (id) => {
+    if (confirm("정말 삭제하시겠습니까?")) {
+        delete masterData[id];
+        localStorage.setItem('league_db', JSON.stringify(masterData));
+        renderHistoryList();
+        updateHistorySelector();
+        if (curId === id) location.reload();
+    }
+};
+
+function updateHistorySelector() {
+    const sel = document.getElementById('leagueHistorySelector');
+    const ids = Object.keys(masterData).sort((a, b) => masterData[b].date.localeCompare(masterData[a].date));
+    sel.innerHTML = '<option value="">-- 과거 대회 바로가기 --</option>' + 
+        ids.map(id => `<option value="${id}">${masterData[id].date} | ${masterData[id].title}</option>`).join('');
+}
