@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>탁구 리그 매트릭스 시스템</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🏓 </h1>
+        <div class="config-group">
+            <strong>인원수 설정:</strong>
+            <input type="number" id="playerCount" value="8" min="2" max="30" onchange="generateNameInputs()">
+            <button onclick="generateNameInputs()">입력창 생성</button>
+        </div>
+        <section id="setupSection" class="card">
+            <h3>1. 리그 환경 설정</h3>
+            <div class="config-group">
+                <p><strong>경기 방식 선택:</strong></p>
+                <label><input type="radio" name="gameRule" value="2" checked> 3판 2승제</label>
+                <label><input type="radio" name="gameRule" value="3"> 5판 3승제</label>
+                <label><input type="radio" name="gameRule" value="4"> 7판 4승제</label>
+            </div>
+            <hr>
+            <h3>2. 선수 등록 (8명)</h3>
+            <div id="nameInputs" class="name-grid"></div>
+            <button id="startBtn">리그 매트릭스 생성</button>
+        </section>
+
+
+        <div id="mainDashboard" style="display:none;">
+            <section class="card overflow-x">
+                <h3>📝 결과 입력 (행 선수의 세트 스코어 입력)</h3>
+                <p class="rule-note">* 본인 칸(회색)을 제외한 칸에 점수를 입력하세요. 반대 칸은 자동 반영됩니다.</p>
+                <table id="matrixTable">
+
+                    <thead><tr id="matrixHead"></tr></thead>
+                    <tbody id="matrixBody"></tbody>
+                </table>
+            </section>
+
+            <section class="card">
+                <h3>📊 현재 순위 (승자승 우선)</h3>
+                <table id="standingsTable">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>이름</th>
+                            <th>승-패</th>
+                            <th>득실차</th>
+                            <th>승점</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
