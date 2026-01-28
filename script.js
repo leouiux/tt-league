@@ -1,5 +1,6 @@
-/**
+    /**
  * League Master Logic (Responsive & Accessible)
+ * 승자승 로직 추가 버전
  */
 let masterData = JSON.parse(localStorage.getItem('league_db')) || {};
 let curId = null;
@@ -198,11 +199,92 @@ function updateStandings(gn) {
         return s;
     });
 
-    const ranked = [...stats].sort((a, b) => b.pts !== a.pts ? b.pts - a.pts : b.diff - a.diff);
-    ranked.forEach((p, i) => {
-        let r = i + 1;
-        if (i > 0 && p.pts === ranked[i - 1].pts && p.diff === ranked[i - 1].diff) r = ranked[i - 1].rank;
+    // 승자승 로직을 적용한 순위 결정
+    const ranked = [...stats].sort((a, b) => {
+        // 1차: 승점 비교
+        if (a.pts !== b.pts) return b.pts - a.pts;
+        
+        // 2차: 승점이 같으면 전체 득실차 비교
+        if (a.diff !== b.diff) return b.diff - a.diff;
+        
+        return 0;
+    });
+
+    // 동률 그룹을 찾아서 승자승 적용
+    let i = 0;
+    while (i < ranked.length) {
+        // 같은 승점과 득실을 가진 선수들을 찾기
+        let tiedGroup = [ranked[i]];
+        let j = i + 1;
+        
+        while (j < ranked.length && 
+               ranked[j].pts === ranked[i].pts && 
+               ranked[j].diff === ranked[i].diff) {
+            tiedGroup.push(ranked[j]);
+            j++;
+        }
+        
+        // 동률이 2명 이상이면 승자승 적용
+        if (tiedGroup.length > 1) {
+            tiedGroup = tiedGroup.map(player => {
+                let h2hWins = 0;
+                let h2hSW = 0;
+                let h2hSL = 0;
+                
+                // 동률 그룹 내 다른 선수들과의 전적만 계산
+                tiedGroup.forEach(opponent => {
+                    if (player.name === opponent.name) return;
+                    const m = g.results[player.name][opponent.name];
+                    if (m.done) {
+                        h2hSW += m.s1;
+                        h2hSL += m.s2;
+                        if (m.s1 > m.s2) h2hWins++;
+                    }
+                });
+                
+                return {
+                    ...player,
+                    h2hWins,
+                    h2hDiff: h2hSW - h2hSL
+                };
+            });
+            
+            // 승자승 승수 -> 승자승 득실차 순으로 재정렬
+            tiedGroup.sort((a, b) => {
+                if (a.h2hWins !== b.h2hWins) return b.h2hWins - a.h2hWins;
+                if (a.h2hDiff !== b.h2hDiff) return b.h2hDiff - a.h2hDiff;
+                return 0;
+            });
+            
+            // 재정렬된 순서로 ranked 배열에 다시 넣기
+            for (let k = 0; k < tiedGroup.length; k++) {
+                ranked[i + k] = tiedGroup[k];
+            }
+        }
+        
+        i = j;
+    }
+
+    // 순위 부여 및 완전 동률 표시
+    ranked.forEach((p, idx) => {
+        let r = idx + 1;
+        p.isTied = false;
+        
+        if (idx > 0) {
+            const prev = ranked[idx - 1];
+            // 승점, 득실, 승자승 승수, 승자승 득실이 모두 같으면 동률
+            if (p.pts === prev.pts && 
+                p.diff === prev.diff &&
+                p.h2hWins === prev.h2hWins &&
+                p.h2hDiff === prev.h2hDiff) {
+                r = prev.rank;
+                p.isTied = true;
+                prev.isTied = true;
+            }
+        }
+        
         stats.find(x => x.name === p.name).rank = r;
+        stats.find(x => x.name === p.name).isTied = p.isTied;
     });
 
     const opt = groupSortOptions[gn];
@@ -212,13 +294,13 @@ function updateStandings(gn) {
     });
 
     document.querySelector(`#standings-${gn} tbody`).innerHTML = stats.map(s => `
-        <tr>
+        <tr style="${s.isTied ? 'background-color: #fee2e2;' : ''}">
             <td>${s.id}</td>
             <td><strong>${s.name}</strong></td>
             <td>${s.w}승 ${s.l}패</td>
             <td style="color: ${s.diff > 0 ? '#10b981' : s.diff < 0 ? '#ef4444' : '#64748b'}; font-weight: bold;">${s.diff > 0 ? '+' + s.diff : s.diff}</td>
             <td style="color:#2563eb; font-weight:bold;">${s.pts}</td>
-            <td style="background:#f8fafc; font-weight:bold;">${s.rank}</td>
+            <td style="background:#f8fafc; font-weight:bold;">${s.rank}${s.isTied ? ' (동률)' : ''}</td>
         </tr>`).join('');
 }
 
