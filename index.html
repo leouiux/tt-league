@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>리그 관리 시스템 - 가독성 강화 모드</title>
+    <title>탁구 리그 관리 시스템</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,27 +14,39 @@
         <div class="nav-bar">
             <div class="nav-controls">
                 <strong>📅 대회 선택:</strong>
-                <select id="leagueHistorySelector">
+                <select id="leagueHistorySelector" aria-label="과거 대회 선택">
                     <option value="">-- 과거 대회 바로가기 --</option>
                 </select>
-                <button class="btn-sub" id="viewHistoryBtn">지난 대회 리스트 보기</button>
+                <button class="btn-sub" id="viewHistoryBtn">지난 대회 리스트</button>
             </div>
             <div id="activeControls" class="hidden">
-                <button class="btn-main" id="saveDataBtn">💾 전체 데이터 저장</button>
-                <button class="btn-sub" onclick="location.reload()">새 대회 생성</button>
+                <button class="btn-main" id="saveDataBtn">💾 저장</button>
+                <button class="btn-sub" onclick="location.reload()">새 대회</button>
             </div>
         </div>
     </header>
 
     <main id="setupArea">
         <section class="config-box-large">
-            <div class="input-group-large"><label>날짜</label><input type="date" id="leagueDate"></div>
-            <div class="input-group-large"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예: 2026 리그 챔피언십"></div>
-            <div class="input-group-large"><label>조 개수</label><input type="number" id="groupCount" value="2" min="1"></div>
-            <div class="input-group-large"><label>조별 인원</label><input type="number" id="playerCount" value="4" min="2"></div>
+            <div class="input-group-large">
+                <label for="leagueDate">날짜</label>
+                <input type="date" id="leagueDate" aria-label="대회 날짜">
+            </div>
+            <div class="input-group-large">
+                <label for="leagueTitle">대회명</label>
+                <input type="text" id="leagueTitle" placeholder="예: 2026 리그 챔피언십" aria-label="대회명">
+            </div>
+            <div class="input-group-large">
+                <label for="groupCount">조 개수</label>
+                <input type="number" id="groupCount" value="2" min="1" aria-label="조 개수">
+            </div>
+            <div class="input-group-large">
+                <label for="playerCount">조별 인원</label>
+                <input type="number" id="playerCount" value="4" min="2" aria-label="조별 인원">
+            </div>
             <div class="input-group-large">
                 <label>방식</label>
-                <div class="radio-group-large">
+                <div class="radio-group-large" role="radiogroup" aria-label="경기 방식">
                     <label><input type="radio" name="gameRule" value="2" checked> 2선승</label>
                     <label><input type="radio" name="gameRule" value="3"> 3선승</label>
                 </div>
@@ -43,8 +55,8 @@
         <button class="btn-main btn-huge full-width" id="prepareNamesBtn">1단계: 이름 입력창 생성</button>
         
         <section id="nameInputArea" class="hidden mt-40">
-            <h2 class="section-title">👤 선수 명단 입력</h2>
-            <div id="nameInputs" class="name-inputs-grid"></div>
+            <h2 style="font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 15px;">👤 선수 명단 입력</h2>
+            <div id="nameInputs"></div>
             <button class="btn-main btn-huge full-width mt-20" id="startLeagueBtn">2단계: 전체 조 매트릭스 생성</button>
         </section>
     </main>
@@ -54,13 +66,24 @@
     </section>
 </div>
 
-<div id="listLayer" class="layer-overlay">
+<div id="listLayer" class="layer-overlay" role="dialog" aria-labelledby="layerTitle" aria-modal="true">
     <div class="layer-content">
         <div class="layer-header">
-            <h3>저장된 대회 리스트</h3>
-            <button class="close-btn" id="closeLayerBtn">✕</button>
+            <h3 id="layerTitle">저장된 대회 리스트</h3>
+            <button class="close-btn" id="closeLayerBtn" aria-label="닫기">✕</button>
         </div>
-        <div id="saveListContainer"></div>
+        <div class="history-table">
+            <table id="saveListContainer">
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>대회명</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
     </div>
 </div>
 

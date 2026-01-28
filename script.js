@@ -1,5 +1,5 @@
 /**
- * League Master Logic (Clean UI & Alert)
+ * League Master Logic (Responsive & Accessible)
  */
 let masterData = JSON.parse(localStorage.getItem('league_db')) || {};
 let curId = null;
@@ -15,13 +15,24 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('closeLayerBtn').addEventListener('click', () => toggleLayer(false));
     document.getElementById('leagueHistorySelector').addEventListener('change', (e) => loadLeague(e.target.value));
     
+    // ESC 키로 레이어 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggleLayer(false);
+    });
+    
     updateHistorySelector();
 });
 
 // 1. 이름 입력창 생성
 function prepareNames() {
-    const gc = document.getElementById('groupCount').value;
-    const pc = document.getElementById('playerCount').value;
+    const gc = parseInt(document.getElementById('groupCount').value);
+    const pc = parseInt(document.getElementById('playerCount').value);
+    
+    if (gc < 1 || pc < 2) {
+        alert('⚠️ 조 개수는 1개 이상, 조별 인원은 2명 이상이어야 합니다.');
+        return;
+    }
+    
     const container = document.getElementById('nameInputs');
     container.innerHTML = '';
     
@@ -29,15 +40,20 @@ function prepareNames() {
         const gName = String.fromCharCode(65 + i) + "조";
         let html = `
             <div class="name-inputs-container">
-                <strong style="font-size: 1.2rem; color: var(--primary);">${gName} 명단 입력</strong>
+                <strong style="font-size: clamp(1rem, 3vw, 1.2rem); color: var(--primary);">${gName} 명단 입력</strong>
                 <div class="name-inputs-grid">`;
         for (let j = 1; j <= pc; j++) {
-            html += `<input type="text" class="p-name" data-group="${gName}" placeholder="${gName} 선수${j}">`;
+            html += `<input type="text" class="p-name" data-group="${gName}" placeholder="${gName} 선수${j}" aria-label="${gName} 선수${j}">`;
         }
         html += `</div></div>`;
         container.innerHTML += html;
     }
     document.getElementById('nameInputArea').classList.remove('hidden');
+    
+    // 스크롤 이동
+    setTimeout(() => {
+        document.getElementById('nameInputArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
 // 2. 새 리그 생성
@@ -52,7 +68,7 @@ function createNewLeague() {
     document.querySelectorAll('.p-name').forEach((el) => {
         const g = el.dataset.group;
         if (!league.groups[g]) league.groups[g] = { names: [], results: {}, playerIds: {} };
-        const pName = el.value || el.placeholder;
+        const pName = el.value.trim() || el.placeholder;
         league.groups[g].names.push(pName);
         league.groups[g].playerIds[pName] = league.groups[g].names.length;
     });
@@ -69,7 +85,7 @@ function createNewLeague() {
     }
 
     masterData[id] = league;
-    saveToStorage(true); // 처음 생성 시엔 무음 저장
+    saveToStorage(true);
     loadLeague(id);
 }
 
@@ -94,26 +110,41 @@ function loadLeague(id) {
                 <div class="group-layout">
                     <div class="matrix-section">
                         <h3>📊 결과 입력 (Matrix)</h3>
-                        <table><thead id="head-${gn}"></thead><tbody id="body-${gn}"></tbody></table>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead id="head-${gn}"></thead>
+                                <tbody id="body-${gn}"></tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="standing-section">
                         <h3>🏅 순위표</h3>
-                        <table id="standings-${gn}">
-                            <thead>
-                                <tr>
-                                    <th class="sortable" onclick="handleSort('${gn}', 'id')">ID</th>
-                                    <th>이름</th><th>전적</th><th>득실</th><th>승점</th>
-                                    <th class="sortable" onclick="handleSort('${gn}', 'rank')">순위</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
+                        <div class="table-wrapper">
+                            <table id="standings-${gn}">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="handleSort('${gn}', 'id')" role="button" tabindex="0">ID ↕</th>
+                                        <th>이름</th>
+                                        <th>전적</th>
+                                        <th>득실</th>
+                                        <th>승점</th>
+                                        <th class="sortable" onclick="handleSort('${gn}', 'rank')" role="button" tabindex="0">순위 ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </section>`;
         renderMatrix(gn);
         updateStandings(gn);
     });
+    
+    // 스크롤 이동
+    setTimeout(() => {
+        document.getElementById('mainDashboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
 }
 
 function renderMatrix(gn) {
@@ -128,7 +159,7 @@ function renderMatrix(gn) {
                 const res = g.results[n1][n2];
                 const win = res.done && res.s1 > res.s2;
                 return `<td class="${win ? 'cell-winner' : ''}">
-                    <select onchange="updateMatrixScore('${gn}','${n1}','${n2}',this.value)" class="matrix-select">
+                    <select onchange="updateMatrixScore('${gn}','${n1}','${n2}',this.value)" class="matrix-select" aria-label="${n1} vs ${n2} 결과">
                         ${getOptions(d.targetWins, `${res.s1}:${res.s2}`)}
                     </select></td>`;
             }).join('')}
@@ -182,9 +213,11 @@ function updateStandings(gn) {
 
     document.querySelector(`#standings-${gn} tbody`).innerHTML = stats.map(s => `
         <tr>
-            <td>${s.id}</td><td><strong>${s.name}</strong></td>
-            <td>${s.w}승 ${s.l}패</td><td>${s.diff > 0 ? '+' + s.diff : s.diff}</td>
-            <td style="color:blue; font-weight:bold;">${s.pts}</td>
+            <td>${s.id}</td>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.w}승 ${s.l}패</td>
+            <td style="color: ${s.diff > 0 ? '#10b981' : s.diff < 0 ? '#ef4444' : '#64748b'}; font-weight: bold;">${s.diff > 0 ? '+' + s.diff : s.diff}</td>
+            <td style="color:#2563eb; font-weight:bold;">${s.pts}</td>
             <td style="background:#f8fafc; font-weight:bold;">${s.rank}</td>
         </tr>`).join('');
 }
@@ -199,39 +232,60 @@ window.handleSort = (gn, key) => {
 // --- 저장 및 알림 ---
 function saveToStorage(silent = false) {
     if (!curId) return;
-    localStorage.setItem('league_db', JSON.stringify(masterData));
-    updateHistorySelector();
-    if (!silent) alert("✅ 모든 데이터가 브라우저에 안전하게 저장되었습니다.");
+    try {
+        localStorage.setItem('league_db', JSON.stringify(masterData));
+        updateHistorySelector();
+        if (!silent) alert("✅ 모든 데이터가 브라우저에 안전하게 저장되었습니다.");
+    } catch (e) {
+        alert("❌ 저장 중 오류가 발생했습니다: " + e.message);
+    }
 }
 
 function toggleLayer(show) {
-    document.getElementById('listLayer').style.display = show ? 'flex' : 'none';
-    if (show) renderHistoryList();
+    const layer = document.getElementById('listLayer');
+    layer.style.display = show ? 'flex' : 'none';
+    if (show) {
+        renderHistoryList();
+        // 포커스 이동
+        document.getElementById('closeLayerBtn').focus();
+    }
 }
 
 function renderHistoryList() {
-    const container = document.getElementById('saveListContainer');
+    const tbody = document.querySelector('#saveListContainer tbody');
     const keys = Object.keys(masterData).sort((a, b) => masterData[b].date.localeCompare(masterData[a].date));
     
-    container.innerHTML = keys.map(id => `
+    if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#64748b;">저장된 대회가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = keys.map(id => `
         <tr>
-            <td>${masterData[id].date}</td>
+            <td style="white-space: nowrap;">${masterData[id].date}</td>
             <td style="text-align:left; font-weight:bold;">${masterData[id].title}</td>
-            <td>
+            <td style="white-space: nowrap;">
                 <button class="btn-sm btn-edit" onclick="handleEdit('${id}')">불러오기</button>
                 <button class="btn-sm btn-del" onclick="handleDelete('${id}')">삭제</button>
             </td>
         </tr>`).join('');
 }
 
-window.handleEdit = (id) => { toggleLayer(false); loadLeague(id); };
+window.handleEdit = (id) => { 
+    toggleLayer(false);
+    loadLeague(id);
+};
+
 window.handleDelete = (id) => {
-    if (confirm("정말 삭제하시겠습니까?")) {
+    if (confirm("⚠️ 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
         delete masterData[id];
         localStorage.setItem('league_db', JSON.stringify(masterData));
         renderHistoryList();
         updateHistorySelector();
-        if (curId === id) location.reload();
+        if (curId === id) {
+            alert("현재 보고 있던 대회가 삭제되었습니다. 페이지를 새로고침합니다.");
+            location.reload();
+        }
     }
 };
 
