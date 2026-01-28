@@ -29,7 +29,7 @@
     <main id="setupArea">
         <section class="config-box-large">
             <div class="input-group-large"><label>날짜</label><input type="date" id="leagueDate"></div>
-            <div class="input-group-large"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예: 제1회 클럽 리그전"></div>
+            <div class="input-group-large"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예: 2026 리그 챔피언십"></div>
             <div class="input-group-large"><label>조 개수</label><input type="number" id="groupCount" value="2" min="1"></div>
             <div class="input-group-large"><label>조별 인원</label><input type="number" id="playerCount" value="4" min="2"></div>
             <div class="input-group-large">
@@ -44,7 +44,7 @@
         
         <section id="nameInputArea" class="hidden mt-40">
             <h2 class="section-title">👤 선수 명단 입력</h2>
-            <div id="nameInputs"></div>
+            <div id="nameInputs" class="name-inputs-grid"></div>
             <button class="btn-main btn-huge full-width mt-20" id="startLeagueBtn">2단계: 전체 조 매트릭스 생성</button>
         </section>
     </main>
@@ -57,21 +57,10 @@
 <div id="listLayer" class="layer-overlay">
     <div class="layer-content">
         <div class="layer-header">
-            <h3>📂 저장된 대회 기록</h3>
+            <h3>저장된 대회 리스트</h3>
             <button class="close-btn" id="closeLayerBtn">✕</button>
         </div>
-        <div class="layer-body">
-            <table class="history-table">
-                <thead>
-                    <tr>
-                        <th>날짜</th>
-                        <th>대회명</th>
-                        <th>관리</th>
-                    </tr>
-                </thead>
-                <tbody id="saveListContainer"></tbody>
-            </table>
-        </div>
+        <div id="saveListContainer"></div>
     </div>
 </div>
 

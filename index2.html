@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>탁구 리그 관리 시스템</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --danger: #ef4444;
+            --success: #10b981;
+            --border: #cbd5e1;
+            --text: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body { 
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            background: #f1f5f9;
+            padding: 20px 10px;
+            color: var(--text);
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        .container { 
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        h1 { 
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            text-align: center;
+            margin: 0 0 20px 0;
+            color: var(--primary);
+            word-break: keep-all;
+        }
+
+        .hidden { display: none !important; }
+        .mt-20 { margin-top: 20px; }
+        .mt-40 { margin-top: 40px; }
+        .full-width { width: 100%; }
+
+        /* 상단 네비게이션 - 반응형 */
+        .nav-bar { 
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #e2e8f0;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .nav-controls { 
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .nav-controls strong {
+            width: 100%;
+            font-size: 0.95rem;
+        }
+
+        .nav-controls select {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            font-size: 0.95rem;
+        }
+
+        #activeControls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* 1단계 & 2단계 입력창 - 반응형 그리드 */
+        .config-box-large { 
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+            gap: 15px;
+            padding: 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: #f8fafc;
+        }
+
+        .input-group-large { 
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group-large label { 
+            font-weight: 700;
+            font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+        }
+
+        .input-group-large input { 
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: clamp(1rem, 2.5vw, 1.2rem);
+            font-weight: 600;
+        }
+
+        .radio-group-large { 
+            display: flex;
+            gap: 15px;
+            padding-top: 5px;
+            font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+            font-weight: 600;
+            flex-wrap: wrap;
+        }
+
+        .radio-group-large label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .radio-group-large input { 
+            width: 18px;
+            height: 18px;
+        }
+
+        /* 선수 명단 입력창 - 반응형 */
+        .name-inputs-container { 
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .name-inputs-grid { 
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .p-name { 
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* 버튼 - 반응형 */
+        button { 
+            cursor: pointer;
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            transition: 0.2s;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            white-space: nowrap;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-main { 
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-main:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-sub { 
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-sub:hover {
+            background: #475569;
+        }
+
+        .btn-huge { 
+            padding: 14px;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+        }
+
+        /* 그룹 섹션 - 반응형 레이아웃 */
+        .group-section { 
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .group-title { 
+            font-size: clamp(1.3rem, 4vw, 1.8rem);
+            font-weight: 900;
+            color: var(--primary);
+            border-left: 6px solid var(--primary);
+            padding-left: 15px;
+            margin-bottom: 20px;
+        }
+
+        .group-layout { 
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 25px;
+        }
+
+        .matrix-section h3,
+        .standing-section h3 {
+            font-size: clamp(1.1rem, 3vw, 1.3rem);
+            margin-top: 0;
+            margin-bottom: 15px;
+        }
+
+        /* 테이블 - 반응형 스크롤 */
+        .table-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table { 
+            width: 100%;
+            min-width: 400px;
+            border-collapse: collapse;
+            background: #fff;
+        }
+
+        th, td { 
+            border: 1px solid var(--border);
+            padding: 8px 4px;
+            text-align: center;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+        }
+
+        th { 
+            background: #f8fafc;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        th.sortable { 
+            cursor: pointer;
+            color: var(--primary);
+            text-decoration: underline;
+            user-select: none;
+        }
+
+        th.sortable:hover {
+            background: #e2e8f0;
+        }
+
+        .matrix-select { 
+            width: 100%;
+            border: none;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+            font-weight: bold;
+            text-align-last: center;
+            cursor: pointer;
+            padding: 4px 2px;
+        }
+
+        .cell-winner {
+            background: #dcfce7 !important;
+        }
+
+        /* 레이어 팝업 - 반응형 */
+        .layer-overlay { 
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .layer-content { 
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .layer-header { 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .layer-header h3 {
+            margin: 0;
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+        }
+
+        .close-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .history-table {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .history-table table {
+            min-width: 500px;
+        }
+
+        .history-table th { 
+            background: #f1f5f9;
+            padding: 12px 8px;
+        }
+
+        .history-table td { 
+            padding: 10px 8px;
+            font-size: clamp(0.85rem, 2vw, 1rem);
+        }
+
+        .btn-sm { 
+            padding: 6px 10px;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            margin: 2px;
+        }
+
+        .btn-edit { 
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #059669;
+        }
+
+        .btn-del { 
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-del:hover {
+            background: #dc2626;
+        }
+
+        /* 태블릿 이상 - 2단 레이아웃 */
+        @media (min-width: 768px) {
+            body {
+                padding: 30px 20px;
+            }
+
+            .container {
+                padding: 30px;
+            }
+
+            h1 {
+                margin-bottom: 30px;
+            }
+
+            .nav-bar {
+                flex-direction: row;
+                justify-content: space-between;
+                padding: 15px 25px;
+            }
+
+            .nav-controls strong {
+                width: auto;
+            }
+
+            .config-box-large {
+                padding: 25px;
+                gap: 20px;
+            }
+
+            .name-inputs-container {
+                padding: 20px;
+            }
+
+            .group-section {
+                padding: 25px;
+            }
+
+            th, td {
+                padding: 10px;
+            }
+        }
+
+        /* 데스크톱 - 그룹 레이아웃 2단 */
+        @media (min-width: 1024px) {
+            body {
+                padding: 40px 20px;
+            }
+
+            .container {
+                padding: 40px;
+            }
+
+            .group-layout { 
+                grid-template-columns: 1fr 450px;
+            }
+        }
+
+        /* 초대형 화면 */
+        @media (min-width: 1400px) {
+            .config-box-large {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        /* 프린트 스타일 */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 20px;
+            }
+
+            .nav-bar,
+            button,
+            .matrix-select {
+                display: none !important;
+            }
+
+            .group-layout {
+                grid-template-columns: 1fr !important;
+            }
+
+            table {
+                page-break-inside: avoid;
+            }
+        }
+
+        /* 접근성 개선 */
+        *:focus-visible {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+
+        /* 로딩 상태 */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🏆 리그 통합 관리 시스템</h1>
+        <div class="nav-bar">
+            <div class="nav-controls">
+                <strong>📅 대회 선택:</strong>
+                <select id="leagueHistorySelector" aria-label="과거 대회 선택">
+                    <option value="">-- 과거 대회 바로가기 --</option>
+                </select>
+                <button class="btn-sub" id="viewHistoryBtn">지난 대회 리스트</button>
+            </div>
+            <div id="activeControls" class="hidden">
+                <button class="btn-main" id="saveDataBtn">💾 저장</button>
+                <button class="btn-sub" onclick="location.reload()">새 대회</button>
+            </div>
+        </div>
+    </header>
+
+    <main id="setupArea">
+        <section class="config-box-large">
+            <div class="input-group-large">
+                <label for="leagueDate">날짜</label>
+                <input type="date" id="leagueDate" aria-label="대회 날짜">
+            </div>
+            <div class="input-group-large">
+                <label for="leagueTitle">대회명</label>
+                <input type="text" id="leagueTitle" placeholder="예: 2026 리그 챔피언십" aria-label="대회명">
+            </div>
+            <div class="input-group-large">
+                <label for="groupCount">조 개수</label>
+                <input type="number" id="groupCount" value="2" min="1" aria-label="조 개수">
+            </div>
+            <div class="input-group-large">
+                <label for="playerCount">조별 인원</label>
+                <input type="number" id="playerCount" value="4" min="2" aria-label="조별 인원">
+            </div>
+            <div class="input-group-large">
+                <label>방식</label>
+                <div class="radio-group-large" role="radiogroup" aria-label="경기 방식">
+                    <label><input type="radio" name="gameRule" value="2" checked> 2선승</label>
+                    <label><input type="radio" name="gameRule" value="3"> 3선승</label>
+                </div>
+            </div>
+        </section>
+        <button class="btn-main btn-huge full-width" id="prepareNamesBtn">1단계: 이름 입력창 생성</button>
+        
+        <section id="nameInputArea" class="hidden mt-40">
+            <h2 style="font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 15px;">👤 선수 명단 입력</h2>
+            <div id="nameInputs"></div>
+            <button class="btn-main btn-huge full-width mt-20" id="startLeagueBtn">2단계: 전체 조 매트릭스 생성</button>
+        </section>
+    </main>
+
+    <section id="mainDashboard" class="hidden mt-40">
+        <div id="allGroupsContainer"></div>
+    </section>
+</div>
+
+<div id="listLayer" class="layer-overlay" role="dialog" aria-labelledby="layerTitle" aria-modal="true">
+    <div class="layer-content">
+        <div class="layer-header">
+            <h3 id="layerTitle">저장된 대회 리스트</h3>
+            <button class="close-btn" id="closeLayerBtn" aria-label="닫기">✕</button>
+        </div>
+        <div class="history-table">
+            <table id="saveListContainer">
+                <thead>
+                    <tr>
+                        <th>날짜</th>
+                        <th>대회명</th>
+                        <th>관리</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+/**
+ * League Master Logic (Responsive & Accessible)
+ */
+let masterData = JSON.parse(localStorage.getItem('league_db')) || {};
+let curId = null;
+let groupSortOptions = {}; 
+
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('leagueDate').value = new Date().toISOString().split('T')[0];
+    
+    document.getElementById('prepareNamesBtn').addEventListener('click', prepareNames);
+    document.getElementById('startLeagueBtn').addEventListener('click', createNewLeague);
+    document.getElementById('saveDataBtn').addEventListener('click', saveToStorage);
+    document.getElementById('viewHistoryBtn').addEventListener('click', () => toggleLayer(true));
+    document.getElementById('closeLayerBtn').addEventListener('click', () => toggleLayer(false));
+    document.getElementById('leagueHistorySelector').addEventListener('change', (e) => loadLeague(e.target.value));
+    
+    // ESC 키로 레이어 닫기
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') toggleLayer(false);
+    });
+    
+    updateHistorySelector();
+});
+
+// 1. 이름 입력창 생성
+function prepareNames() {
+    const gc = parseInt(document.getElementById('groupCount').value);
+    const pc = parseInt(document.getElementById('playerCount').value);
+    
+    if (gc < 1 || pc < 2) {
+        alert('⚠️ 조 개수는 1개 이상, 조별 인원은 2명 이상이어야 합니다.');
+        return;
+    }
+    
+    const container = document.getElementById('nameInputs');
+    container.innerHTML = '';
+    
+    for (let i = 0; i < gc; i++) {
+        const gName = String.fromCharCode(65 + i) + "조";
+        let html = `
+            <div class="name-inputs-container">
+                <strong style="font-size: clamp(1rem, 3vw, 1.2rem); color: var(--primary);">${gName} 명단 입력</strong>
+                <div class="name-inputs-grid">`;
+        for (let j = 1; j <= pc; j++) {
+            html += `<input type="text" class="p-name" data-group="${gName}" placeholder="${gName} 선수${j}" aria-label="${gName} 선수${j}">`;
+        }
+        html += `</div></div>`;
+        container.innerHTML += html;
+    }
+    document.getElementById('nameInputArea').classList.remove('hidden');
+    
+    // 스크롤 이동
+    setTimeout(() => {
+        document.getElementById('nameInputArea').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+// 2. 새 리그 생성
+function createNewLeague() {
+    const id = Date.now().toString();
+    const date = document.getElementById('leagueDate').value;
+    const title = document.getElementById('leagueTitle').value || "무제 대회";
+    const rule = parseInt(document.querySelector('input[name="gameRule"]:checked').value);
+
+    const league = { id, date, title, targetWins: rule, groups: {} };
+    
+    document.querySelectorAll('.p-name').forEach((el) => {
+        const g = el.dataset.group;
+        if (!league.groups[g]) league.groups[g] = { names: [], results: {}, playerIds: {} };
+        const pName = el.value.trim() || el.placeholder;
+        league.groups[g].names.push(pName);
+        league.groups[g].playerIds[pName] = league.groups[g].names.length;
+    });
+
+    for (let g in league.groups) {
+        const names = league.groups[g].names;
+        names.forEach(n1 => {
+            league.groups[g].results[n1] = {};
+            names.forEach(n2 => {
+                if (n1 !== n2) league.groups[g].results[n1][n2] = { s1: 0, s2: 0, done: false };
+            });
+        });
+        groupSortOptions[g] = { key: 'rank', order: 'asc' };
+    }
+
+    masterData[id] = league;
+    saveToStorage(true);
+    loadLeague(id);
+}
+
+// 3. 데이터 로드 및 렌더링
+function loadLeague(id) {
+    if (!id) return;
+    curId = id;
+    const d = masterData[id];
+    
+    document.getElementById('setupArea').classList.add('hidden');
+    document.getElementById('activeControls').classList.remove('hidden');
+    document.getElementById('mainDashboard').classList.remove('hidden');
+
+    const container = document.getElementById('allGroupsContainer');
+    container.innerHTML = '';
+
+    Object.keys(d.groups).forEach(gn => {
+        if(!groupSortOptions[gn]) groupSortOptions[gn] = { key: 'rank', order: 'asc' };
+        container.innerHTML += `
+            <section class="group-section">
+                <div class="group-title">${gn}</div>
+                <div class="group-layout">
+                    <div class="matrix-section">
+                        <h3>📊 결과 입력 (Matrix)</h3>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead id="head-${gn}"></thead>
+                                <tbody id="body-${gn}"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="standing-section">
+                        <h3>🏅 순위표</h3>
+                        <div class="table-wrapper">
+                            <table id="standings-${gn}">
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="handleSort('${gn}', 'id')" role="button" tabindex="0">ID ↕</th>
+                                        <th>이름</th>
+                                        <th>전적</th>
+                                        <th>득실</th>
+                                        <th>승점</th>
+                                        <th class="sortable" onclick="handleSort('${gn}', 'rank')" role="button" tabindex="0">순위 ↕</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>`;
+        renderMatrix(gn);
+        updateStandings(gn);
+    });
+    
+    // 스크롤 이동
+    setTimeout(() => {
+        document.getElementById('mainDashboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+}
+
+function renderMatrix(gn) {
+    const d = masterData[curId];
+    const g = d.groups[gn];
+    document.getElementById(`head-${gn}`).innerHTML = `<th>선수</th>` + g.names.map(n => `<th>${n}</th>`).join('');
+    document.getElementById(`body-${gn}`).innerHTML = g.names.map(n1 => `
+        <tr>
+            <td style="font-weight:bold; background:#f8fafc;">${n1}</td>
+            ${g.names.map(n2 => {
+                if (n1 === n2) return `<td style="background:#f1f5f9;">-</td>`;
+                const res = g.results[n1][n2];
+                const win = res.done && res.s1 > res.s2;
+                return `<td class="${win ? 'cell-winner' : ''}">
+                    <select onchange="updateMatrixScore('${gn}','${n1}','${n2}',this.value)" class="matrix-select" aria-label="${n1} vs ${n2} 결과">
+                        ${getOptions(d.targetWins, `${res.s1}:${res.s2}`)}
+                    </select></td>`;
+            }).join('')}
+        </tr>`).join('');
+}
+
+function getOptions(max, current) {
+    let html = `<option value="0:0" ${current === '0:0' ? 'selected' : ''}>-</option>`;
+    for (let i = 0; i < max; i++) html += `<option value="${max}:${i}" ${current === `${max}:${i}` ? 'selected' : ''}>${max}:${i}</option>`;
+    for (let i = 0; i < max; i++) html += `<option value="${i}:${max}" ${current === `${i}:${max}` ? 'selected' : ''}>${i}:${max}</option>`;
+    return html;
+}
+
+window.updateMatrixScore = (gn, p1, p2, val) => {
+    const [s1, s2] = val.split(':').map(Number);
+    const g = masterData[curId].groups[gn];
+    g.results[p1][p2] = { s1, s2, done: (s1 > 0 || s2 > 0) };
+    g.results[p2][p1] = { s1: s2, s2: s1, done: (s1 > 0 || s2 > 0) };
+    renderMatrix(gn);
+    updateStandings(gn);
+};
+
+function updateStandings(gn) {
+    const g = masterData[curId].groups[gn];
+    let stats = g.names.map(name => {
+        let s = { id: g.playerIds[name], name, w: 0, l: 0, sW: 0, sL: 0, pts: 0 };
+        g.names.forEach(opp => {
+            if (name === opp) return;
+            const m = g.results[name][opp];
+            if (m.done) {
+                s.sW += m.s1; s.sL += m.s2;
+                if (m.s1 > m.s2) { s.w++; s.pts += 2; } else { s.l++; s.pts += 1; }
+            }
+        });
+        s.diff = s.sW - s.sL;
+        return s;
+    });
+
+    const ranked = [...stats].sort((a, b) => b.pts !== a.pts ? b.pts - a.pts : b.diff - a.diff);
+    ranked.forEach((p, i) => {
+        let r = i + 1;
+        if (i > 0 && p.pts === ranked[i - 1].pts && p.diff === ranked[i - 1].diff) r = ranked[i - 1].rank;
+        stats.find(x => x.name === p.name).rank = r;
+    });
+
+    const opt = groupSortOptions[gn];
+    stats.sort((a, b) => {
+        const vA = a[opt.key], vB = b[opt.key];
+        return opt.order === 'asc' ? (vA > vB ? 1 : -1) : (vA < vB ? 1 : -1);
+    });
+
+    document.querySelector(`#standings-${gn} tbody`).innerHTML = stats.map(s => `
+        <tr>
+            <td>${s.id}</td>
+            <td><strong>${s.name}</strong></td>
+            <td>${s.w}승 ${s.l}패</td>
+            <td style="color: ${s.diff > 0 ? '#10b981' : s.diff < 0 ? '#ef4444' : '#64748b'}; font-weight: bold;">${s.diff > 0 ? '+' + s.diff : s.diff}</td>
+            <td style="color:#2563eb; font-weight:bold;">${s.pts}</td>
+            <td style="background:#f8fafc; font-weight:bold;">${s.rank}</td>
+        </tr>`).join('');
+}
+
+window.handleSort = (gn, key) => {
+    const opt = groupSortOptions[gn];
+    if (opt.key === key) opt.order = opt.order === 'asc' ? 'desc' : 'asc';
+    else { opt.key = key; opt.order = 'asc'; }
+    updateStandings(gn);
+};
+
+// --- 저장 및 알림 ---
+function saveToStorage(silent = false) {
+    if (!curId) return;
+    try {
+        localStorage.setItem('league_db', JSON.stringify(masterData));
+        updateHistorySelector();
+        if (!silent) alert("✅ 모든 데이터가 브라우저에 안전하게 저장되었습니다.");
+    } catch (e) {
+        alert("❌ 저장 중 오류가 발생했습니다: " + e.message);
+    }
+}
+
+function toggleLayer(show) {
+    const layer = document.getElementById('listLayer');
+    layer.style.display = show ? 'flex' : 'none';
+    if (show) {
+        renderHistoryList();
+        // 포커스 이동
+        document.getElementById('closeLayerBtn').focus();
+    }
+}
+
+function renderHistoryList() {
+    const tbody = document.querySelector('#saveListContainer tbody');
+    const keys = Object.keys(masterData).sort((a, b) => masterData[b].date.localeCompare(masterData[a].date));
+    
+    if (keys.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:30px; color:#64748b;">저장된 대회가 없습니다.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = keys.map(id => `
+        <tr>
+            <td style="white-space: nowrap;">${masterData[id].date}</td>
+            <td style="text-align:left; font-weight:bold;">${masterData[id].title}</td>
+            <td style="white-space: nowrap;">
+                <button class="btn-sm btn-edit" onclick="handleEdit('${id}')">불러오기</button>
+                <button class="btn-sm btn-del" onclick="handleDelete('${id}')">삭제</button>
+            </td>
+        </tr>`).join('');
+}
+
+window.handleEdit = (id) => { 
+    toggleLayer(false);
+    loadLeague(id);
+};
+
+window.handleDelete = (id) => {
+    if (confirm("⚠️ 정말 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.")) {
+        delete masterData[id];
+        localStorage.setItem('league_db', JSON.stringify(masterData));
+        renderHistoryList();
+        updateHistorySelector();
+        if (curId === id) {
+            alert("현재 보고 있던 대회가 삭제되었습니다. 페이지를 새로고침합니다.");
+            location.reload();
+        }
+    }
+};
+
+function updateHistorySelector() {
+    const sel = document.getElementById('leagueHistorySelector');
+    const ids = Object.keys(masterData).sort((a, b) => masterData[b].date.localeCompare(masterData[a].date));
+    sel.innerHTML = '<option value="">-- 과거 대회 바로가기 --</option>' + 
+        ids.map(id => `<option value="${id}">${masterData[id].date} | ${masterData[id].title}</option>`).join('');
+}
+</script>
+</body>
+</html>
