@@ -1,4 +1,4 @@
-    /**
+/**
  * League Master Logic (Responsive & Accessible)
  * 승자승 로직 추가 버전
  */
@@ -185,6 +185,17 @@ window.updateMatrixScore = (gn, p1, p2, val) => {
 
 function updateStandings(gn) {
     const g = masterData[curId].groups[gn];
+    
+    // 모든 경기가 완료되었는지 확인
+    const totalMatches = (g.names.length * (g.names.length - 1)) / 2;
+    let completedMatches = 0;
+    g.names.forEach(n1 => {
+        g.names.forEach(n2 => {
+            if (n1 < n2 && g.results[n1][n2].done) completedMatches++;
+        });
+    });
+    const allMatchesComplete = completedMatches === totalMatches;
+    
     let stats = g.names.map(name => {
         let s = { id: g.playerIds[name], name, w: 0, l: 0, sW: 0, sL: 0, pts: 0 };
         g.names.forEach(opp => {
@@ -265,25 +276,32 @@ function updateStandings(gn) {
         i = j;
     }
 
-    // 순위 부여 및 완전 동률 표시
+    // 순위 부여 및 완전 동률 표시 (모든 경기 완료시에만)
+    let currentRank = 1;
     ranked.forEach((p, idx) => {
-        let r = idx + 1;
         p.isTied = false;
         
-        if (idx > 0) {
+        if (idx === 0) {
+            p.rank = currentRank;
+        } else {
             const prev = ranked[idx - 1];
-            // 승점, 득실, 승자승 승수, 승자승 득실이 모두 같으면 동률
-            if (p.pts === prev.pts && 
+            
+            // 모든 경기가 완료되었고, 모든 조건이 같으면 동률
+            if (allMatchesComplete &&
+                p.pts === prev.pts && 
                 p.diff === prev.diff &&
                 p.h2hWins === prev.h2hWins &&
                 p.h2hDiff === prev.h2hDiff) {
-                r = prev.rank;
+                p.rank = prev.rank; // 같은 순위 부여
                 p.isTied = true;
                 prev.isTied = true;
+            } else {
+                currentRank = idx + 1; // 실제 순위로 증가
+                p.rank = currentRank;
             }
         }
         
-        stats.find(x => x.name === p.name).rank = r;
+        stats.find(x => x.name === p.name).rank = p.rank;
         stats.find(x => x.name === p.name).isTied = p.isTied;
     });
 
