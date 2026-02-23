@@ -691,56 +691,6 @@
             opacity: 0.6;
             pointer-events: none;
         }
-
-        /* 인쇄용 스타일 */
-        .print-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm;
-            margin: 0 auto;
-            background: white;
-            box-sizing: border-box;
-        }
-
-        .print-page h2 {
-            text-align: center;
-            margin-bottom: 10mm;
-            font-size: 24pt;
-        }
-
-        .print-page table {
-            width: 100%;
-            font-size: 11pt;
-        }
-
-        .print-page th, .print-page td {
-            border: 1px solid #000;
-            padding: 5px;
-        }
-
-        .print-schedule {
-            margin-top: 5mm;
-            font-size: 10pt;
-            line-height: 1.4;
-        }
-
-        .print-btn-container {
-            text-align: center;
-            margin-top: 10mm;
-        }
-
-        @media print {
-            .print-btn-container {
-                display: none;
-            }
-            
-            .print-page {
-                width: 100%;
-                min-height: auto;
-                padding: 0;
-                margin: 0;
-            }
-        }
     </style>
 </head>
 <body>
@@ -854,7 +804,6 @@ let curId = null;
 let groupSortOptions = {}; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 초기 화면 설정
     checkInitialState();
     
     document.getElementById('leagueDate').value = new Date().toISOString().split('T')[0];
@@ -886,7 +835,6 @@ document.addEventListener('DOMContentLoaded', () => {
     updateHistorySelector();
 });
 
-// 초기 화면 상태 확인
 function checkInitialState() {
     if (Object.keys(masterData).length > 0) {
         document.getElementById('initialImport').classList.remove('hidden');
@@ -895,18 +843,15 @@ function checkInitialState() {
     }
 }
 
-// 새 대회 시작
 function startNewLeagueSetup() {
     document.getElementById('initialImport').classList.add('hidden');
     document.getElementById('setupArea').classList.remove('hidden');
 }
 
-// 초기 JSON 가져오기
 function importFromJsonInitial(event) {
     importFromJson(event, true);
 }
 
-// 1. 이름 입력창 생성
 function prepareNames() {
     const gc = parseInt(document.getElementById('groupCount').value);
     const pc = parseInt(document.getElementById('playerCount').value);
@@ -938,7 +883,6 @@ function prepareNames() {
     }, 100);
 }
 
-// 2. 새 리그 생성
 function createNewLeague() {
     const id = Date.now().toString();
     const date = document.getElementById('leagueDate').value;
@@ -972,7 +916,6 @@ function createNewLeague() {
     loadLeague(id);
 }
 
-// 3. 데이터 로드 및 렌더링
 function loadLeague(id) {
     if (!id) return;
     curId = id;
@@ -1034,13 +977,11 @@ function loadLeague(id) {
     }, 100);
 }
 
-// 조 매트릭스 인쇄
 window.printGroupMatrix = function(gn) {
     const league = masterData[curId];
     const g = league.groups[gn];
     const standings = getGroupStandings(gn);
     
-    // 경기 순서 생성 (라운드 로빈)
     const schedule = generateRoundRobinSchedule(g.names);
     
     const printWindow = window.open('', '_blank');
@@ -1051,55 +992,82 @@ window.printGroupMatrix = function(gn) {
     <meta charset="UTF-8">
     <title>${league.title} - ${gn} 대진표</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        @page {
+            size: A4 landscape;
+            margin: 5mm;
+        }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+        }
         body { 
             font-family: 'Pretendard', -apple-system, sans-serif;
-            padding: 15mm;
+            padding: 5mm;
+            width: 100%;
+            height: 100%;
         }
         .print-page {
             width: 100%;
             height: 100%;
+            display: flex;
+            flex-direction: column;
         }
         h2 {
             text-align: center;
-            margin-bottom: 10mm;
-            font-size: 20pt;
+            margin-bottom: 3mm;
+            font-size: 18pt;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 5mm;
+            flex-grow: 1;
         }
         th, td {
             border: 1px solid #000;
-            padding: 5px;
+            padding: 2px 4px;
             text-align: center;
-            font-size: 10pt;
+            font-size: 9pt;
+            line-height: 1.2;
         }
         th {
             background: #f0f0f0;
             font-weight: bold;
+            font-size: 9pt;
         }
         .player-name {
             text-align: left;
             font-weight: bold;
+            padding-left: 5px;
         }
         .print-schedule {
-            margin-top: 5mm;
+            margin-top: 3mm;
             font-size: 10pt;
-            line-height: 1.6;
+            line-height: 1.4;
         }
         .print-schedule strong {
             display: block;
-            margin-bottom: 3mm;
+            margin-bottom: 2mm;
+        }
+        .schedule-matches {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .schedule-matches span {
+            white-space: nowrap;
+        }
+        .schedule-matches span:not(:last-child)::after {
+            content: ' / ';
+            margin-left: 8px;
         }
         .print-btn-container {
             text-align: center;
-            margin-top: 5mm;
+            margin-top: 3mm;
         }
         button {
-            padding: 10px 30px;
-            font-size: 14pt;
+            padding: 8px 25px;
+            font-size: 12pt;
             background: #2563eb;
             color: white;
             border: none;
@@ -1110,7 +1078,12 @@ window.printGroupMatrix = function(gn) {
             background: #1d4ed8;
         }
         @media print {
-            button { display: none; }
+            button { 
+                display: none; 
+            }
+            body {
+                padding: 0;
+            }
         }
     </style>
 </head>
@@ -1120,11 +1093,11 @@ window.printGroupMatrix = function(gn) {
         <table>
             <thead>
                 <tr>
-                    <th>선수</th>
-                    ${g.names.map(n => `<th>${n}</th>`).join('')}
-                    <th>승/패</th>
-                    <th>득실</th>
-                    <th>순위</th>
+                    <th style="width: 15%;">선수</th>
+                    ${g.names.map(n => `<th style="width: ${70 / g.names.length}%;">${n}</th>`).join('')}
+                    <th style="width: 5%;">승/패</th>
+                    <th style="width: 5%;">득실</th>
+                    <th style="width: 5%;">순위</th>
                 </tr>
             </thead>
             <tbody>
@@ -1145,7 +1118,9 @@ window.printGroupMatrix = function(gn) {
         
         <div class="print-schedule">
             <strong>📋 경기 순서:</strong>
-            ${schedule.map((match, i) => `${i + 1}. ${match}`).join(', ')}
+            <div class="schedule-matches">
+                ${schedule.map(match => `<span>${match}</span>`).join('')}
+            </div>
         </div>
         
         <div class="print-btn-container">
@@ -1158,7 +1133,6 @@ window.printGroupMatrix = function(gn) {
     printWindow.document.close();
 };
 
-// 라운드 로빈 경기 순서 생성
 function generateRoundRobinSchedule(players) {
     const n = players.length;
     const schedule = [];
@@ -1175,11 +1149,10 @@ function generateRoundRobinSchedule(players) {
             const p1 = players[i];
             const p2 = players[players.length - 1 - i];
             if (p1 !== 'BYE' && p2 !== 'BYE') {
-                schedule.push(`${p1} vs ${p2}`);
+                schedule.push(`${p1}-${p2}`);
             }
         }
         
-        // 회전
         players.splice(1, 0, players.pop());
     }
     
@@ -1353,7 +1326,6 @@ window.handleSort = (gn, key) => {
     updateStandings(gn);
 };
 
-// 조별 순위 계산
 function getGroupStandings(gn) {
     const g = masterData[curId].groups[gn];
     
@@ -1441,7 +1413,6 @@ function getGroupStandings(gn) {
     return ranked;
 }
 
-// 토너먼트 생성 (128강, 64강, 32강, 16강, 8강, 4강 지원)
 function createTournament() {
     if (!curId) {
         alert('⚠️ 먼저 리그전을 생성해주세요.');
@@ -1518,12 +1489,10 @@ function createTournament() {
     showTournament();
 }
 
-// Cross 방식 대진표 생성 (128강~결승 지원)
 function createCrossMatches(seeds) {
     const n = seeds.length;
     let matches = {};
     
-    // 128강
     if (n === 128) {
         matches.round128 = [];
         for (let i = 0; i < 64; i++) {
@@ -1539,7 +1508,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 64강
     if (n >= 64) {
         matches.round64 = [];
         for (let i = 0; i < 32; i++) {
@@ -1568,7 +1536,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 32강
     if (n >= 32) {
         matches.round32 = [];
         for (let i = 0; i < 16; i++) {
@@ -1597,7 +1564,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 16강
     if (n >= 16) {
         matches.round16 = [];
         for (let i = 0; i < 8; i++) {
@@ -1626,7 +1592,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 8강
     if (n >= 8) {
         matches.round8 = [];
         for (let i = 0; i < 4; i++) {
@@ -1655,7 +1620,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 준결승
     if (n >= 4) {
         matches.round4 = [];
         for (let i = 0; i < 2; i++) {
@@ -1684,7 +1648,6 @@ function createCrossMatches(seeds) {
         }
     }
     
-    // 결승
     if (n >= 2) {
         matches.round2 = [{
             id: 'final',
@@ -1701,7 +1664,6 @@ function createCrossMatches(seeds) {
     return matches;
 }
 
-// 토너먼트 화면 표시
 function showTournament() {
     document.getElementById('mainDashboard').classList.add('hidden');
     document.getElementById('tournamentArea').classList.remove('hidden');
@@ -1712,7 +1674,6 @@ function showTournament() {
     }, 100);
 }
 
-// 리그전으로 돌아가기
 function backToLeague() {
     document.getElementById('tournamentArea').classList.add('hidden');
     document.getElementById('mainDashboard').classList.remove('hidden');
@@ -1722,7 +1683,6 @@ function backToLeague() {
     }, 100);
 }
 
-// 토너먼트 렌더링
 function renderTournament() {
     const league = masterData[curId];
     if (!league.tournament) return;
@@ -1784,7 +1744,6 @@ function renderTournament() {
     }
 }
 
-// 승자 선택
 window.selectWinner = function(matchId, playerNum) {
     const league = masterData[curId];
     if (!league.tournament) return;
@@ -1831,7 +1790,6 @@ window.selectWinner = function(matchId, playerNum) {
     renderTournament();
 };
 
-// JSON 내보내기
 function exportToJson() {
     if (Object.keys(masterData).length === 0) {
         alert('⚠️ 저장된 대회 데이터가 없습니다.');
@@ -1865,7 +1823,6 @@ function exportToJson() {
     }
 }
 
-// JSON 가져오기
 function importFromJson(event, isInitial = false) {
     const file = event.target.files[0];
     if (!file) return;
@@ -1930,7 +1887,6 @@ function importFromJson(event, isInitial = false) {
     reader.readAsText(file);
 }
 
-// 저장 및 알림
 function saveToStorage(silent = false) {
     if (!curId) return;
     try {
