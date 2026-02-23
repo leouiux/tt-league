@@ -702,9 +702,9 @@
         <!-- 첫 화면 JSON 가져오기 -->
         <div id="initialImport" class="initial-import">
             <h3>📂 저장된 대회 데이터 불러오기</h3>
-            <p>이전에 저장한 JSON 파일을 불러오거나 새 대회를 시작하세요.</p>
+            <p>이전에 저장한 데이터 파일을 불러오거나 새 대회를 시작하세요.</p>
             <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 15px;">
-                <button class="btn-success" id="initialImportBtn">📂 JSON 파일 불러오기</button>
+                <button class="btn-success" id="initialImportBtn">📂 데이터 파일 불러오기</button>
                 <button class="btn-main" id="startNewLeagueBtn">➕ 새 대회 시작</button>
             </div>
             <input type="file" id="initialJsonFileInput" accept=".json" style="display: none;">
@@ -720,8 +720,8 @@
             </div>
             <div id="activeControls" class="hidden">
                 <button class="btn-main" id="saveDataBtn">💾 저장</button>
-                <button class="btn-success" id="exportJsonBtn">📥 JSON 내보내기</button>
-                <button class="btn-success" id="importJsonBtn">📂 JSON 가져오기</button>
+                <button class="btn-success" id="exportJsonBtn">📥 데이터 내보내기</button>
+                <button class="btn-success" id="importJsonBtn">📂 데이터 가져오기</button>
                 <input type="file" id="jsonFileInput" accept=".json" style="display: none;">
                 <button class="btn-warning" id="goToTournamentBtn">🏆 토너먼트로 이동</button>
                 <button class="btn-sub" onclick="location.reload()">새 대회</button>
@@ -741,11 +741,11 @@
             </div>
             <div class="input-group-large">
                 <label for="groupCount">조 개수</label>
-                <input type="number" id="groupCount" value="2" min="1" aria-label="조 개수">
+                <input type="number" id="groupCount" value="4" min="1" aria-label="조 개수">
             </div>
             <div class="input-group-large">
                 <label for="playerCount">조별 인원</label>
-                <input type="number" id="playerCount" value="4" min="2" aria-label="조별 인원">
+                <input type="number" id="playerCount" value="8" min="2" aria-label="조별 인원">
             </div>
             <div class="input-group-large">
                 <label>방식</label>
