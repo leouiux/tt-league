@@ -994,7 +994,7 @@ window.printGroupMatrix = function(gn) {
     <style>
         @page {
             size: A4 landscape;
-            margin: 5mm;
+            margin: 10mm;
         }
         * { 
             box-sizing: border-box; 
@@ -1025,24 +1025,24 @@ window.printGroupMatrix = function(gn) {
         }
         th, td {
             border: 1px solid #000;
-            padding: 2px 4px;
+            padding: 2.8vh 8px;
             text-align: center;
-            font-size: 9pt;
+            font-size: 13pt;
             line-height: 1.2;
         }
         th {
             background: #f0f0f0;
             font-weight: bold;
-            font-size: 9pt;
+            font-size: 13pt;
         }
         .player-name {
             text-align: left;
             font-weight: bold;
-            padding-left: 5px;
+            padding-left: 15px;
         }
         .print-schedule {
             margin-top: 3mm;
-            font-size: 10pt;
+            font-size: 7pt;
             line-height: 1.4;
         }
         .print-schedule strong {
@@ -1093,17 +1093,17 @@ window.printGroupMatrix = function(gn) {
         <table>
             <thead>
                 <tr>
-                    <th style="width: 15%;">선수</th>
+                    <th style="width: 10%;">선수</th>
                     ${g.names.map(n => `<th style="width: ${70 / g.names.length}%;">${n}</th>`).join('')}
-                    <th style="width: 5%;">승/패</th>
+                    <th style="width: 6%;">승/패</th>
                     <th style="width: 5%;">득실</th>
-                    <th style="width: 5%;">순위</th>
+                    <th style="width: 6%;">순위</th>
                 </tr>
             </thead>
             <tbody>
                 ${g.names.map((n1, idx) => `
                     <tr>
-                        <td class="player-name">${idx + 1}. ${n1}</td>
+                        <td class="player-name">${n1}</td>
                         ${g.names.map(n2 => {
                             if (n1 === n2) return '<td style="background:#f0f0f0;">-</td>';
                             return '<td>&nbsp;</td>';
