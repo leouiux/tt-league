@@ -661,7 +661,7 @@
             </div>
             <div class="input-group-large">
                 <label for="eliminateCount">탈락인원 (조당)</label>
-                <input type="number" id="eliminateCount" value="0" min="0" aria-label="탈락인원">
+                <input type="number" id="eliminateCount" value="1" min="0" aria-label="탈락인원">
             </div>
         </section>
         <button class="btn-main btn-huge full-width" id="prepareNamesBtn">1단계: 이름 입력창 생성</button>
@@ -715,7 +715,7 @@
 <div id="bulkInputLayer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
     <div class="bulk-popup">
         <h3>📋 선수 명단 한번에 등록</h3>
-        <p>한 행에 1명씩 입력하세요.<br>문자는 이름, 숫자는 등급입니다.<br>예) 홍길동2<br><br>등급 높은 순으로 입력 시 각 조에 골고루 배분됩니다.</p>
+        <p>한 행에 1명씩 입력하세요.<br>문자=이름, 숫자=등급 (낮을수록 높은 등급)<br>예) 홍길동2<br><br>등급 낮은 숫자(높은 실력) 순으로 입력 시<br>각 조에 교차 배분됩니다.</p>
         <textarea id="bulkTextarea" placeholder="홍길동2&#10;마동탁6&#10;이순신3&#10;..."></textarea>
         <div class="bulk-buttons">
             <button class="btn-main" style="flex:1;" id="bulkConfirmBtn">입력</button>
@@ -815,53 +815,53 @@ function processBulkInput() {
         document.getElementById('bulkInputLayer').style.display = 'none';
         return;
     }
-    
-    // 선수 파싱 (한 줄에 한 명)
-    const players = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
-    
+
+    // 각 줄 파싱: 문자=이름, 숫자=등급 (숫자 낮을수록 높은 등급)
+    const rawLines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const players = rawLines.map(line => {
+        // 문자(한글/영문)와 숫자 분리
+        const nameMatch = line.match(/^[^\d]+/);
+        const gradeMatch = line.match(/\d+/);
+        const name = nameMatch ? nameMatch[0].trim() : line.trim();
+        const grade = gradeMatch ? parseInt(gradeMatch[0]) : 9999;
+        return { fullText: line.trim(), name, grade };
+    }).filter(p => p.name.length > 0);
+
+    // 등급 낮은 숫자(높은 실력) 순으로 정렬
+    players.sort((a, b) => a.grade - b.grade);
+
     // 각 조의 입력 컨테이너 찾기
     const groupContainers = document.querySelectorAll('.name-inputs-container');
     const groupCount = groupContainers.length;
     const playerCount = groupContainers[0] ? groupContainers[0].querySelectorAll('.p-name').length : 0;
-    
+
     if (groupCount === 0 || playerCount === 0) {
         alert('먼저 이름 입력창을 생성해주세요.');
         return;
     }
-    
+
     // 모든 입력 초기화
     document.querySelectorAll('.p-name').forEach(el => el.value = '');
-    
-    // 등급 높은 순으로 교차 배분 (뱀 방식)
-    // player[0] → 조0, player[1] → 조1, ..., player[groupCount-1] → 조(gc-1)
-    // player[groupCount] → 조(gc-1), player[groupCount+1] → 조(gc-2) ...
-    // 이미 등급 높은 순으로 입력받으므로 교차 배분
-    
+
     const groupInputs = [];
     groupContainers.forEach(gc => {
         groupInputs.push(Array.from(gc.querySelectorAll('.p-name')));
     });
-    
+
+    // 뱀(Snake) 방식 배분: 0→1→2→...→N-1→N-1→...→1→0→0→...
     let playerIndex = 0;
-    let slotIndex = 0; // 현재 배분 슬롯(0~playerCount-1)
-    
-    // 뱀 배분: 0,1,2,...,gc-1, gc-1,...,1,0, 0,1,...
+    let slotIndex = 0;
     while (playerIndex < players.length) {
         const round = Math.floor(slotIndex / groupCount);
         const posInRound = slotIndex % groupCount;
-        let groupIdx;
-        if (round % 2 === 0) {
-            groupIdx = posInRound;
-        } else {
-            groupIdx = groupCount - 1 - posInRound;
-        }
-        
+        const groupIdx = (round % 2 === 0) ? posInRound : (groupCount - 1 - posInRound);
+
         if (groupIdx < groupInputs.length) {
-            // 해당 그룹에서 빈 슬롯 찾기
             let filled = false;
             for (let i = 0; i < groupInputs[groupIdx].length; i++) {
                 if (groupInputs[groupIdx][i].value === '') {
-                    groupInputs[groupIdx][i].value = players[playerIndex];
+                    // fullText (원본 문자열 그대로) 입력
+                    groupInputs[groupIdx][i].value = players[playerIndex].fullText;
                     filled = true;
                     break;
                 }
@@ -869,9 +869,9 @@ function processBulkInput() {
             if (filled) playerIndex++;
         }
         slotIndex++;
-        if (slotIndex > groupCount * playerCount + players.length) break; // 무한루프 방지
+        if (slotIndex > groupCount * playerCount * 2 + 100) break; // 무한루프 방지
     }
-    
+
     document.getElementById('bulkTextarea').value = '';
     document.getElementById('bulkInputLayer').style.display = 'none';
 }
@@ -887,12 +887,19 @@ function createNewLeague() {
     
     document.querySelectorAll('.p-name').forEach((el) => {
         const g = el.dataset.group;
-        if (!league.groups[g]) league.groups[g] = { names: [], results: {}, playerIds: {} };
-        const pName = el.value.trim();
-        // 공란이면 부족인원(탈락자)으로 처리 - names에 추가하지 않음
-        if (pName) {
-            league.groups[g].names.push(pName);
-            league.groups[g].playerIds[pName] = league.groups[g].names.length;
+        if (!league.groups[g]) league.groups[g] = { names: [], results: {}, playerIds: {}, grades: {} };
+        const rawVal = el.value.trim();
+        if (rawVal) {
+            // 이름(문자)과 등급(숫자) 분리
+            const nameMatch = rawVal.match(/^[^\d]+/);
+            const gradeMatch = rawVal.match(/\d+/);
+            const pName = nameMatch ? nameMatch[0].trim() : rawVal;
+            const grade = gradeMatch ? parseInt(gradeMatch[0]) : 9999;
+            if (pName) {
+                league.groups[g].names.push(pName);
+                league.groups[g].playerIds[pName] = league.groups[g].names.length;
+                league.groups[g].grades[pName] = grade;
+            }
         }
     });
 
@@ -994,7 +1001,7 @@ window.printGroupMatrix = function(gn) {
         .print-page { width: 100%; height: 100%; display: flex; flex-direction: column; }
         h2 { text-align: center; margin-bottom: 3mm; font-size: 18pt; }
         table { width: 100%; border-collapse: collapse; flex-grow: 1; }
-        th, td { border: 1px solid #000; padding: ${27 / (g.names.length+1)}vh 8px; text-align: center; font-size: ${104 / g.names.length}pt; }
+        th, td { border: 1px solid #000; padding: ${27 / g.names.length+1}vh 8px; text-align: center; font-size: ${104 / g.names.length}pt; }
         th { background: #f0f0f0; font-weight: bold; }
         .player-name { text-align: left; font-weight: bold; padding-left: 15px; }
         .print-schedule { margin-top: 3mm; font-size: 7pt; }
@@ -1253,9 +1260,9 @@ function createTournament() {
         if (!confirm('⚠️ 일부 리그 경기가 완료되지 않았습니다.\n그래도 토너먼트를 생성하시겠습니까?')) return;
     }
     
-    // 진출자 수집 (탈락자 제외)
+    // 진출자 수집 (탈락자 제외) - 등급 정보 포함
     const eliminateCount = league.eliminateCount || 0;
-    const seeds = []; // { name, group, rank, seed, isEliminated }
+    const seeds = []; // { name, group, rank, seed, isEliminated, grade }
     const groupNames = Object.keys(league.groups).sort();
     const maxPlayersPerGroup = Math.max(...groupNames.map(gn => league.groups[gn].names.length));
     
@@ -1266,12 +1273,14 @@ function createTournament() {
             const playerAtRank = standings.find(p => p.rank === rank);
             if (playerAtRank) {
                 const isElim = eliminateCount > 0 && playerAtRank.rank > (totalInGroup - eliminateCount);
+                const grade = (league.groups[gn].grades && league.groups[gn].grades[playerAtRank.name]) || 9999;
                 seeds.push({
                     name: playerAtRank.name,
                     group: gn,
                     rank: rank,
                     seed: `${gn} ${rank}위`,
-                    isEliminated: isElim
+                    isEliminated: isElim,
+                    grade: grade
                 });
             }
         });
@@ -1291,75 +1300,74 @@ function createTournament() {
 }
 
 /**
- * 국제대회 표준 토너먼트 배치
- * 실력 교차(Cross) 방식: 1위 vs 최하위, 2위 vs 두번째하위 ...
- * 탈락자는 '-' 처리, 상대방 부전승 처리
+ * 국제대회 표준 토너먼트 배치 (ITF Cross 방식)
+ * - 등급(grade) 낮을수록 높은 실력
+ * - 1번 시드(최고 실력) vs 마지막 시드, 2번 vs N-1번 교차
+ * - 탈락자는 '-' 처리, 상대방 부전승
  */
 function buildStandardBracket(seeds) {
-    const n = seeds.length;
-    
-    // 토너먼트 크기 결정 (2의 거듭제곱으로 올림)
+    // 비탈락자를 grade 기준 오름차순(낮을수록 강함) 정렬 → 시드 번호 부여
+    const activePlayers = seeds.filter(s => !s.isEliminated)
+        .sort((a, b) => a.grade - b.grade || a.rank - b.rank);
+    const eliminatedPlayers = seeds.filter(s => s.isEliminated);
+
+    // 토너먼트 크기: 활성 플레이어 수 기준 2의 거듭제곱
+    const activeCount = activePlayers.length;
     let size = 2;
-    while (size < n) size *= 2;
-    
-    // 빈 슬롯에 null (부전승 처리용)
+    while (size < activeCount) size *= 2;
+
+    // ITF 표준 시드 배치 위치 계산
+    // 시드 1: 위치 0, 시드 2: 위치 size-1, 시드 3/4: 위치 size/2-1 또는 size/2
+    // 재귀적으로 브래킷 위치 배열 생성
+    const bracketPositions = getITFPositions(size); // [1번시드위치, 2번시드위치, ...]
+
+    // size 크기의 슬롯 배열 생성 (null = 빈 슬롯/부전승)
     const slots = new Array(size).fill(null);
-    seeds.forEach((s, i) => { slots[i] = s; });
-    
-    // 표준 시드 배치: 1번 상단, 2번 하단, 3/4 교차, ...
-    // ITF/국제대회 시드 배치 공식
-    const orderedSlots = standardSeedPlacement(size, slots);
-    
-    // 1라운드 매치 생성
+    activePlayers.forEach((player, idx) => {
+        const pos = bracketPositions[idx];
+        if (pos !== undefined) slots[pos] = player;
+    });
+
+    // 탈락자는 별도로 빈 슬롯에 배치 (탈락 표시용) - 이미 배제했으므로 슬롯은 null
+
+    // 1라운드 매치 생성 (슬롯 쌍: 0-1, 2-3, 4-5, ...)
     const roundMatches = [];
     const round1 = [];
     for (let i = 0; i < size / 2; i++) {
-        const p1 = orderedSlots[i * 2];
-        const p2 = orderedSlots[i * 2 + 1];
-        
+        const p1 = slots[i * 2];
+        const p2 = slots[i * 2 + 1];
         const matchId = `r1_${i}`;
-        const isP1Elim = p1 && p1.isEliminated;
-        const isP2Elim = p2 && p2.isEliminated;
-        
+
         let player1Name = p1 ? p1.name : null;
         let player2Name = p2 ? p2.name : null;
         let seed1 = p1 ? p1.seed : '';
         let seed2 = p2 ? p2.seed : '';
-        
-        // 탈락자 처리
-        if (isP1Elim) player1Name = '-';
-        if (isP2Elim) player2Name = '-';
-        
-        let winner = null;
-        let completed = false;
-        let walkoverPlayer = null;
-        
-        // 부전승 처리: 한쪽이 null이거나 탈락자인 경우
-        if (!p1 || isP1Elim) {
-            winner = player2Name && player2Name !== '-' ? player2Name : null;
-            walkoverPlayer = winner;
-            if (winner) completed = true;
-        } else if (!p2 || isP2Elim) {
-            winner = player1Name && player1Name !== '-' ? player1Name : null;
-            walkoverPlayer = winner;
-            if (winner) completed = true;
+
+        let winner = null, completed = false, isWalkover = false;
+
+        // 한쪽이 null이면 부전승
+        if (player1Name && !player2Name) {
+            winner = player1Name;
+            completed = true;
+            isWalkover = true;
+        } else if (!player1Name && player2Name) {
+            winner = player2Name;
+            completed = true;
+            isWalkover = true;
         }
-        
+
         round1.push({
             id: matchId,
             player1: player1Name,
             player2: player2Name,
             seed1, seed2,
-            winner,
-            completed,
-            isWalkover: !!walkoverPlayer,
-            walkoverPlayer,
-            p1Eliminated: isP1Elim,
-            p2Eliminated: isP2Elim
+            winner, completed, isWalkover,
+            p1Eliminated: false,
+            p2Eliminated: false
         });
     }
     roundMatches.push(round1);
-    
+
     // 이후 라운드 생성
     let prevRound = round1;
     while (prevRound.length > 1) {
@@ -1368,16 +1376,16 @@ function buildStandardBracket(seeds) {
             const m1 = prevRound[i * 2];
             const m2 = prevRound[i * 2 + 1];
             const matchId = `r${roundMatches.length + 1}_${i}`;
-            
+
             let p1 = m1.winner || null;
             let p2 = m2.winner || null;
             let s1 = m1.winner ? (m1.winner === m1.player1 ? m1.seed1 : m1.seed2) : '';
             let s2 = m2.winner ? (m2.winner === m2.player1 ? m2.seed1 : m2.seed2) : '';
-            
+
             let winner = null, completed = false, isWalkover = false;
             if (p1 && !p2) { winner = p1; completed = true; isWalkover = true; }
             else if (!p1 && p2) { winner = p2; completed = true; isWalkover = true; }
-            
+
             nextRound.push({
                 id: matchId,
                 player1: p1, player2: p2,
@@ -1389,14 +1397,69 @@ function buildStandardBracket(seeds) {
         roundMatches.push(nextRound);
         prevRound = nextRound;
     }
-    
+
     // 라운드 이름 결정
     const roundNames = getRoundNames(roundMatches.length);
-    
     return roundMatches.map((matches, idx) => ({
         name: roundNames[idx] || `${Math.pow(2, roundMatches.length - idx) * 2}강`,
         matches
     }));
+}
+
+/**
+ * ITF 표준 시드 배치 위치 배열 반환
+ * size=8 예시: [0, 7, 3, 4, 1, 6, 2, 5] (시드1~8의 슬롯 위치)
+ * → 슬롯: [1,5,7,3, 4,8,6,2] (슬롯0~7에 누가 오는지)
+ */
+function getITFPositions(size) {
+    // 재귀적으로 시드 배치 위치 계산
+    // 결과: 인덱스=시드번호(0-based), 값=슬롯위치
+    if (size === 2) return [0, 1];
+    if (size === 1) return [0];
+
+    const half = size / 2;
+    const prevPositions = getITFPositions(half);
+
+    // 각 이전 위치를 2배로 확장: pos → pos*2 또는 pos*2+1
+    // 상위 시드는 위(짝수), 하위 시드는 아래(홀수)에 교대 배치
+    // ITF 규칙: 1번↔최하, 반쪽씩 재귀 분할
+    const result = [];
+    for (let i = 0; i < prevPositions.length; i++) {
+        const prevPos = prevPositions[i];
+        if (i % 2 === 0) {
+            // 강한 시드 → 위쪽 슬롯
+            result.push(prevPos * 2);
+        } else {
+            // 약한 시드 → 아래쪽 슬롯
+            result.push(prevPos * 2 + 1);
+        }
+    }
+
+    // 상위 절반 시드와 하위 절반 시드 인터리브
+    // 시드 1,2는 다른 반쪽에, 3/4는 각각 나뉘어야 함
+    // 표준 배치: 결승에서 1vs2, 준결승에서 1vs3/4, 2vs3/4
+    return buildITFBracket(size);
+}
+
+function buildITFBracket(size) {
+    // ITF/WTA/ATP 표준 대진 위치
+    // 결과 배열: positions[seedIndex] = slotIndex
+    if (size === 2) return [0, 1];
+    if (size === 4) return [0, 3, 1, 2]; // 1,4,2,3 → 매치: (1v4),(2v3)
+    if (size === 8) return [0, 7, 3, 4, 1, 6, 2, 5];
+    if (size === 16) return [0, 15, 7, 8, 3, 12, 4, 11, 1, 14, 6, 9, 2, 13, 5, 10];
+    if (size === 32) return [
+        0,31,15,16,7,24,8,23,3,28,12,19,4,27,11,20,
+        1,30,14,17,6,25,9,22,2,29,13,18,5,26,10,21
+    ];
+    if (size === 64) {
+        const half = buildITFBracket(32);
+        return [...half.map(p => p*2), ...half.map(p => p*2+1)];
+    }
+    // 일반 재귀
+    const half = size / 2;
+    const sub = buildITFBracket(half);
+    return [...sub.map(p => p * 2), ...sub.map(p => p * 2 + 1)];
 }
 
 function getRoundNames(totalRounds) {
@@ -1407,71 +1470,6 @@ function getRoundNames(totalRounds) {
         names.push(finals[fromEnd] || `${Math.pow(2, fromEnd + 1)}강`);
     }
     return names;
-}
-
-// 표준 시드 배치 (ITF 방식)
-function standardSeedPlacement(size, players) {
-    // 재귀적으로 시드 배치
-    function placeSeeds(slots, indices) {
-        if (slots.length === 2) return slots;
-        
-        const half = slots.length / 2;
-        const top = slots.slice(0, half);
-        const bottom = slots.slice(half);
-        
-        return [...placeSeeds(top, indices), ...placeSeeds(bottom, indices)];
-    }
-    
-    // 단순 교차 배치: [1, size, 2, size-1, 3, size-2, ...]
-    const result = new Array(size).fill(null);
-    
-    // 표준 대진표 배치 순서
-    const positions = buildBracketPositions(size);
-    
-    players.forEach((player, idx) => {
-        if (idx < positions.length) {
-            result[positions[idx]] = player;
-        }
-    });
-    
-    return result;
-}
-
-function buildBracketPositions(size) {
-    if (size === 2) return [0, 1];
-    
-    const prev = buildBracketPositions(size / 2);
-    const result = [];
-    prev.forEach(pos => {
-        result.push(pos * 2);
-        result.push(pos * 2 + 1);
-    });
-    
-    // 시드 배치: 홀수 인덱스의 위치를 반전 (교차 배치)
-    // 표준: 1위-하단, 2위-상단 교차
-    const seedOrder = getSeedOrder(size);
-    const positionMap = new Array(size);
-    seedOrder.forEach((seedPos, seedNum) => {
-        positionMap[seedNum] = result[seedPos] !== undefined ? result[seedPos] : seedNum;
-    });
-    
-    return Array.from({length: size}, (_, i) => i);
-}
-
-// ITF 표준 시드 순서 (1vs최하, 2vsN-1 교차)
-function getSeedOrder(n) {
-    if (n === 1) return [0];
-    if (n === 2) return [0, 1];
-    
-    const prev = getSeedOrder(n / 2);
-    const result = new Array(n);
-    
-    for (let i = 0; i < prev.length; i++) {
-        result[i * 2] = prev[i] * 2;
-        result[i * 2 + 1] = prev[i] * 2 + 1;
-    }
-    
-    return result;
 }
 
 function showTournament() {
@@ -1514,66 +1512,64 @@ function renderTournament() {
         
         const matchesCol = document.createElement('div');
         matchesCol.className = 'matches-column';
-        matchesCol.style.cssText = `
-            display: flex;
-            flex-direction: column;
-            flex: 1;
-        `;
+        matchesCol.style.cssText = 'display:flex; flex-direction:column; flex:1;';
         
-        const matchCount = round.matches.length;
-        
-        round.matches.forEach((match, matchIdx) => {
+        round.matches.forEach((match) => {
             const wrapperDiv = document.createElement('div');
             wrapperDiv.className = 'match-wrapper';
-            // 각 match-wrapper가 균등하게 공간 차지
-            wrapperDiv.style.cssText = `
-                flex: 1;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 4px 0;
-            `;
+            wrapperDiv.style.cssText = 'flex:1; display:flex; align-items:center; justify-content:center; padding:4px 0;';
             
             const matchDiv = document.createElement('div');
             matchDiv.className = `match ${match.completed ? 'completed' : ''}`;
-            matchDiv.style.cssText = 'width: 100%;';
+            matchDiv.style.cssText = 'width:100%;';
             
             const p1IsElim = match.p1Eliminated;
             const p2IsElim = match.p2Eliminated;
-            const p1IsWalkover = match.isWalkover && match.winner === match.player2 && !p2IsElim;
-            const p2IsWalkover = match.isWalkover && match.winner === match.player1 && !p1IsElim;
             
-            const p1Class = p1IsElim ? 'eliminated-player' : (match.winner === match.player1 ? 'winner' : '') + (p1IsWalkover ? ' walkover' : '');
-            const p2Class = p2IsElim ? 'eliminated-player' : (match.winner === match.player2 ? 'winner' : '') + (p2IsWalkover ? ' walkover' : '');
-            
-            const p1Label = p1IsElim ? `${match.player1 || '-'} (탈락)` : 
-                            (match.isWalkover && match.winner === match.player1 ? `${match.player1 || 'TBD'} (부전승)` : (match.player1 || 'TBD'));
-            const p2Label = p2IsElim ? `${match.player2 || '-'} (탈락)` :
-                            (match.isWalkover && match.winner === match.player2 ? `${match.player2 || 'TBD'} (부전승)` : (match.player2 || 'TBD'));
-            
-            const canSelect = match.player1 && match.player2 && 
-                              match.player1 !== '-' && match.player2 !== '-' &&
-                              !match.isWalkover;
-            
+            // 부전승 여부 판단
+            const isWalkover = match.isWalkover || false;
+
+            const p1Class = p1IsElim ? 'eliminated-player' :
+                            (match.winner === match.player1 ? 'winner' : '') +
+                            (isWalkover && match.winner === match.player1 ? ' walkover' : '');
+            const p2Class = p2IsElim ? 'eliminated-player' :
+                            (match.winner === match.player2 ? 'winner' : '') +
+                            (isWalkover && match.winner === match.player2 ? ' walkover' : '');
+
+            // 이름 표시: null → 공란, 부전승자 표기
+            const p1Display = p1IsElim ? `${match.player1 || ''} (탈락)` :
+                              (isWalkover && match.winner === match.player1 ? `${match.player1 || ''} (부전승)` :
+                              (match.player1 || ''));
+            const p2Display = p2IsElim ? `${match.player2 || ''} (탈락)` :
+                              (isWalkover && match.winner === match.player2 ? `${match.player2 || ''} (부전승)` :
+                              (match.player2 || ''));
+
+            // 선택 가능: 두 플레이어 모두 있고 부전승 아닌 경우
+            const canSelect = match.player1 && match.player2 && !isWalkover;
+
+            // 인쇄 버튼: 부전승 매치는 표시 안 함
+            const printBtn = isWalkover ? '' :
+                `<div class="match-actions">
+                    <button class="btn-match-print" onclick="printMatchCard('${match.id}')">🖨️ 인쇄</button>
+                </div>`;
+
             matchDiv.innerHTML = `
-                <div class="match-player ${p1Class}">
+                <div class="match-player ${p1Class.trim()}">
                     ${canSelect ? `<input type="radio" name="match_${match.id}" id="${match.id}_p1" value="1" ${match.winner===match.player1?'checked':''} onchange="selectWinner('${match.id}', 1)">` : ''}
                     <label for="${match.id}_p1">
                         ${match.seed1 ? `<span class="player-seed">${match.seed1}</span>` : ''}
-                        ${p1Label}
+                        ${p1Display}
                     </label>
                 </div>
                 <div class="match-vs">VS</div>
-                <div class="match-player ${p2Class}">
+                <div class="match-player ${p2Class.trim()}">
                     ${canSelect ? `<input type="radio" name="match_${match.id}" id="${match.id}_p2" value="2" ${match.winner===match.player2?'checked':''} onchange="selectWinner('${match.id}', 2)">` : ''}
                     <label for="${match.id}_p2">
                         ${match.seed2 ? `<span class="player-seed">${match.seed2}</span>` : ''}
-                        ${p2Label}
+                        ${p2Display}
                     </label>
                 </div>
-                <div class="match-actions">
-                    <button class="btn-match-print" onclick="printMatchCard('${match.id}')">🖨️ 인쇄</button>
-                </div>
+                ${printBtn}
             `;
             
             wrapperDiv.appendChild(matchDiv);
@@ -1596,7 +1592,7 @@ function renderTournament() {
     }
 }
 
-// 각 경기 인쇄 (첨부 이미지 형식)
+// 각 경기 인쇄 (첨부 이미지 형식 - 화면 꽉 차게)
 window.printMatchCard = function(matchId) {
     const league = masterData[curId];
     let match = null;
@@ -1608,50 +1604,58 @@ window.printMatchCard = function(matchId) {
     }
     
     if (!match) return;
-    
-    const title = league.title || '용문리그 토너먼트';
+
+    // 대회명에서 "용문리그" 추출 또는 전체 사용
+    const fullTitle = league.title || '용문리그 토너먼트';
+    // "용문리그 32강" 형식
+    const printTitle = `${fullTitle} ${roundName}`;
     const today = new Date().toISOString().split('T')[0];
     
-    const p1Name = match.player1 || '-';
-    const p2Name = match.player2 || '-';
+    const p1Name = match.player1 || '';
+    const p2Name = match.player2 || '';
     
-    const printWin = window.open('', '_blank', 'width=900,height=650');
+    const printWin = window.open('', '_blank', 'width=1100,height=750');
     printWin.document.write(`<!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>${title} - ${roundName} 경기표</title>
+<title>${printTitle}</title>
 <style>
-    @page { size: A4 landscape; margin: 15mm; }
+    @page { size: A4 landscape; margin: 8mm; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
+    html, body {
+        width: 100%;
+        height: 100%;
         font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        background: #fff;
+    }
+    body {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        padding: 12px;
         min-height: 100vh;
-        background: #fff;
-        padding: 20px;
     }
     .card {
         width: 100%;
-        max-width: 700px;
+        max-width: 100%;
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 24px);
     }
     h1 {
         text-align: center;
-        font-size: 28pt;
+        font-size: clamp(20pt, 4vw, 30pt);
         font-weight: 900;
-        margin-bottom: 20px;
-        letter-spacing: -0.5px;
+        margin-bottom: 10px;
+        flex-shrink: 0;
     }
     .match-table {
         width: 100%;
         border-collapse: collapse;
         border: 3px solid #000;
-    }
-    .match-table tr:first-child {
-        border-bottom: 3px solid #000;
+        flex: 1;
     }
     .match-table td {
         border: 1px solid #000;
@@ -1659,26 +1663,27 @@ window.printMatchCard = function(matchId) {
         vertical-align: middle;
         padding: 0;
     }
-    .player-cell {
-        width: 50%;
-        font-size: 36pt;
+    .header-row td {
+        border-bottom: 3px solid #000;
+        font-size: clamp(24pt, 5vw, 42pt);
         font-weight: 900;
-        padding: 20px 15px;
-        height: 100px;
+        padding: 16px 20px;
+        height: 22vh;
     }
     .score-row td {
-        height: 140px;
-        border-top: 3px solid #000;
+        height: 55vh;
+        border-top: 1px solid #000;
     }
     .footer {
         text-align: center;
-        margin-top: 16px;
+        margin-top: 8px;
         font-size: 11pt;
         color: #333;
+        flex-shrink: 0;
     }
     .print-btn {
         display: block;
-        margin: 20px auto 0;
+        margin: 10px auto 0;
         padding: 10px 30px;
         font-size: 13pt;
         background: #2563eb;
@@ -1687,29 +1692,31 @@ window.printMatchCard = function(matchId) {
         border-radius: 6px;
         cursor: pointer;
         font-weight: bold;
+        flex-shrink: 0;
     }
     @media print {
         .print-btn { display: none; }
         body { padding: 0; }
+        .card { height: 100vh; }
     }
 </style>
 </head>
 <body>
 <div class="card">
-    <h1>${title} ${roundName}</h1>
+    <h1>${printTitle}</h1>
     <table class="match-table">
-        <tr>
-            <td class="player-cell">${p1Name}</td>
-            <td class="player-cell">${p2Name}</td>
+        <tr class="header-row">
+            <td style="width:50%; border-right:3px solid #000;">${p1Name}</td>
+            <td style="width:50%;">${p2Name}</td>
         </tr>
         <tr class="score-row">
-            <td></td>
+            <td style="border-right:3px solid #000;"></td>
             <td></td>
         </tr>
     </table>
     <div class="footer">${today}</div>
+    <button class="print-btn" onclick="window.print()">🖨️ 인쇄</button>
 </div>
-<button class="print-btn" onclick="window.print()">🖨️ 인쇄</button>
 </body>
 </html>`);
     printWin.document.close();
