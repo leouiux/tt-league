@@ -715,7 +715,7 @@
 <div id="bulkInputLayer" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:2000; justify-content:center; align-items:center;">
     <div class="bulk-popup">
         <h3>📋 선수 명단 한번에 등록</h3>
-        <p>한 행에 1명씩 입력하세요.<br>문자=이름, 숫자=등급 (낮을수록 높은 등급)<br>예) 홍길동2<br><br>등급 낮은 숫자(높은 실력) 순으로 입력 시<br>각 조에 교차 배분됩니다.</p>
+        <p>한 행에 1명씩 입력하세요.<br>문자=이름, 숫자=부수<br>예) 홍길동2<br><br>부수가 높은 사람 순으로 각 조에 교차 배분됩니다.</p>
         <textarea id="bulkTextarea" placeholder="홍길동2&#10;마동탁6&#10;이순신3&#10;..."></textarea>
         <div class="bulk-buttons">
             <button class="btn-main" style="flex:1;" id="bulkConfirmBtn">입력</button>
@@ -879,7 +879,7 @@ function processBulkInput() {
 function createNewLeague() {
     const id = Date.now().toString();
     const date = document.getElementById('leagueDate').value;
-    const title = document.getElementById('leagueTitle').value || "무제 대회";
+    const title = document.getElementById('leagueTitle').value || "용문리그";
     const rule = parseInt(document.querySelector('input[name="gameRule"]:checked').value);
     const eliminateCount = parseInt(document.getElementById('eliminateCount').value) || 0;
 
@@ -1001,7 +1001,7 @@ window.printGroupMatrix = function(gn) {
         .print-page { width: 100%; height: 100%; display: flex; flex-direction: column; }
         h2 { text-align: center; margin-bottom: 3mm; font-size: 18pt; }
         table { width: 100%; border-collapse: collapse; flex-grow: 1; }
-        th, td { border: 1px solid #000; padding: ${27 / g.names.length+1}vh 8px; text-align: center; font-size: ${104 / g.names.length}pt; }
+        th, td { border: 1px solid #000; padding: ${27 / (g.names.length+1)}vh 8px; text-align: center; font-size: ${104 / g.names.length}pt; }
         th { background: #f0f0f0; font-weight: bold; }
         .player-name { text-align: left; font-weight: bold; padding-left: 15px; }
         .print-schedule { margin-top: 3mm; font-size: 7pt; }
