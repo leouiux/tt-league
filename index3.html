@@ -994,7 +994,7 @@ window.printGroupMatrix = function(gn) {
     <style>
         @page {
             size: A4 landscape;
-            margin: 10mm;
+            margin: 9mm;
         }
         * { 
             box-sizing: border-box; 
@@ -1025,15 +1025,15 @@ window.printGroupMatrix = function(gn) {
         }
         th, td {
             border: 1px solid #000;
-            padding: 2.8vh 8px;
+            padding: ${27 / g.names.length+1}vh 8px;
             text-align: center;
-            font-size: 13pt;
+            font-size: ${104 / g.names.length}pt;
             line-height: 1.2;
         }
         th {
             background: #f0f0f0;
             font-weight: bold;
-            font-size: 13pt;
+            font-size: ${104 / g.names.length}pt;
         }
         .player-name {
             text-align: left;
@@ -1043,7 +1043,7 @@ window.printGroupMatrix = function(gn) {
         .print-schedule {
             margin-top: 3mm;
             font-size: 7pt;
-            line-height: 1.4;
+            line-height: 1.2;
         }
         .print-schedule strong {
             display: block;
@@ -1094,10 +1094,10 @@ window.printGroupMatrix = function(gn) {
             <thead>
                 <tr>
                     <th style="width: 10%;">선수</th>
-                    ${g.names.map(n => `<th style="width: ${70 / g.names.length}%;">${n}</th>`).join('')}
-                    <th style="width: 6%;">승/패</th>
+                    ${g.names.map(n => `<th style="width: ${73 / g.names.length}%;">${n}</th>`).join('')}
+                    <th style="width: 7%;">승/패</th>
                     <th style="width: 5%;">득실</th>
-                    <th style="width: 6%;">순위</th>
+                    <th style="width: 5%;">순위</th>
                 </tr>
             </thead>
             <tbody>
@@ -1108,7 +1108,7 @@ window.printGroupMatrix = function(gn) {
                             if (n1 === n2) return '<td style="background:#f0f0f0;">-</td>';
                             return '<td>&nbsp;</td>';
                         }).join('')}
-                        <td>&nbsp;</td>
+                        <td>/</td>
                         <td>&nbsp;</td>
                         <td>&nbsp;</td>
                     </tr>
@@ -1117,7 +1117,6 @@ window.printGroupMatrix = function(gn) {
         </table>
         
         <div class="print-schedule">
-            <strong>📋 경기 순서:</strong>
             <div class="schedule-matches">
                 ${schedule.map(match => `<span>${match}</span>`).join('')}
             </div>
