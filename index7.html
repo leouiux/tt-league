@@ -199,7 +199,7 @@ th.sortable:hover { background: var(--primary-light); }
 
 /* ── TOURNAMENT BRACKET ── */
 .tournament-wrap {
-  overflow-x: auto; overflow-y: visible; padding: 24px 50px 24px 16px;
+  overflow-x: auto; overflow-y: visible; padding: 24px 16px 32px 16px;
   background: linear-gradient(135deg, #f0f2f7 0%, #eef0fe 100%);
   border-radius: var(--radius); border: 1.5px solid var(--border);
 }
@@ -222,21 +222,21 @@ th.sortable:hover { background: var(--primary-light); }
   min-height: 106px;
 }
 .match-card {
-  width: 196px; flex-shrink: 0;
+  width: 220px; flex-shrink: 0;
   background: var(--surface); border-radius: 10px;
   border: 1.5px solid var(--border);
   box-shadow: var(--shadow-sm);
-  margin: 0 10px;
   overflow: hidden; position: relative;
   transition: box-shadow 0.18s;
+  display: flex; flex-direction: column;
 }
 .match-card:hover { box-shadow: var(--shadow); }
 .match-card.final-card { border-color: var(--warning); box-shadow: 0 4px 16px rgba(245,158,11,0.2); }
 
 .mrow {
-  display: flex; align-items: center; padding: 8px 10px;
-  min-height: 38px; border-bottom: 1px solid var(--border);
-  gap: 6px; transition: background 0.15s;
+  display: flex; align-items: center; padding: 0 10px;
+  flex: 1; border-bottom: 1px solid var(--border);
+  gap: 6px; transition: background 0.15s; min-height: 0;
 }
 .mrow:last-of-type { border-bottom: none; }
 .mrow.mwinner { background: var(--success-light); }
@@ -799,8 +799,10 @@ function computeStats(gn) {
     return s;
   });
 
+  const totalMatches = g.names.length * (g.names.length - 1) / 2;
   const done = g.names.reduce((c, n1) => c + g.names.filter(n2 => n1 < n2 && g.results[n1][n2]?.done).length, 0);
   const noRes = done === 0;
+  const allMatchesDone = done === totalMatches;
   const ec = masterData[curId].eliminateCount || 0;
 
   // 2. 1차 정렬: 승점 → 전체 세트 득실차
@@ -860,7 +862,9 @@ function computeStats(gn) {
         if (mA !== undefined && mB !== undefined && mA !== mB) {
           cr = idx + 1; p.rank = cr;
         } else {
-          p.rank = prev.rank; p.isTied = prev.isTied = true; p.needsManual = prev.needsManual = true;
+          p.rank = prev.rank; p.isTied = prev.isTied = true;
+          // 수동선택 select는 모든 경기가 완료된 경우에만 표시
+          if (allMatchesDone) { p.needsManual = prev.needsManual = true; }
         }
       } else { cr = idx + 1; p.rank = cr; }
     }
@@ -1052,115 +1056,185 @@ function renderTournament() {
   const rounds = league.tournament.rounds;
   if (!rounds?.length) return;
 
-  /* Layout constants */
-  const BOX_W = 218, BOX_H = 72, COL_GAP = 56, HEADER_H = 42, PAD_TOP = 12;
-  const ROUND_N = rounds.length;
-  const FIRST_MATCH_N = rounds[0].matches.length;
-  const SLOT_H = BOX_H + 20; // fixed 20px gap between match boxes
-  const TOTAL_H = FIRST_MATCH_N * SLOT_H + HEADER_H + PAD_TOP * 2 + 20;
-  const TOTAL_W = ROUND_N * (BOX_W + COL_GAP) + COL_GAP;
+  /*
+   * 레이아웃 구조 (각 열):
+   *  [LABEL_W] [BOX_W] [PRINT_W] [GAP] [LABEL_W] [BOX_W] ...
+   *
+   * 각 대진(match-card)은 relative div 안에:
+   *   왼쪽: 라운드 레이블 (32강 등)
+   *   가운데: 매치 박스
+   *   오른쪽: 인쇄 버튼 (부전승 제외)
+   */
+  const LABEL_W = 50;
+  const BOX_W   = 220;
+  const PRINT_W = 40;
+  const COL_W   = LABEL_W + BOX_W + PRINT_W;  // 308
+  const COL_GAP = 32;
+  const BOX_H   = 72;
+  const SLOT_GAP = 20;
+  const SLOT_H  = BOX_H + SLOT_GAP;
+  const HEADER_H = 42;
+  const PAD_V   = 14;
 
-  const wrapper = document.createElement('div');
-  wrapper.style.cssText = `position:relative;width:${TOTAL_W}px;height:${TOTAL_H}px;overflow:visible;`;
+  const ROUND_N      = rounds.length;
+  const FIRST_N      = rounds[0].matches.length;
+  const TOTAL_W      = ROUND_N * COL_W + (ROUND_N - 1) * COL_GAP;
+  const TOTAL_H      = FIRST_N * SLOT_H + HEADER_H + PAD_V * 2;
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  svg.setAttribute('width', TOTAL_W); svg.setAttribute('height', TOTAL_H);
-  svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;overflow:visible;';
+  /* ── outer wrapper (scroll 컨테이너) ── */
+  const scrollWrap = document.createElement('div');
+  scrollWrap.className = 'tournament-wrap';
 
-  const centerYs = [];
+  /* ── inner absolute canvas ── */
+  const canvas = document.createElement('div');
+  canvas.style.cssText = `position:relative;width:${TOTAL_W}px;height:${TOTAL_H}px;`;
+
+  /* ── SVG for connector lines ── */
+  const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  svg.setAttribute('width', TOTAL_W);
+  svg.setAttribute('height', TOTAL_H);
+  svg.style.cssText = 'position:absolute;top:0;left:0;pointer-events:none;';
+  canvas.appendChild(svg);
+
+  const centerYs = []; // centerYs[ri][mi] = center Y of that match card
 
   rounds.forEach((round, ri) => {
     const isFinal = round.name === '결승';
-    const matchN = round.matches.length;
-    const slotH = (FIRST_MATCH_N * SLOT_H) / matchN;
-    const colX = ri * (BOX_W + COL_GAP);
+    const matchN  = round.matches.length;
+    const slotH   = (FIRST_N * SLOT_H) / matchN; // 후반 라운드는 더 넓은 슬롯
+    const colLeft = ri * (COL_W + COL_GAP);
+    const boxLeft = colLeft + LABEL_W;
     const cys = [];
     centerYs.push(cys);
 
-    /* Column title */
-    const title = document.createElement('div');
-    title.style.cssText = `position:absolute;left:${colX}px;top:${PAD_TOP}px;width:${BOX_W}px;height:${HEADER_H - 6}px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;letter-spacing:0.5px;color:${isFinal ? 'white' : 'var(--primary)'};background:${isFinal ? 'linear-gradient(135deg,var(--warning),#d97706)' : 'var(--primary-light)'};border:1.5px solid ${isFinal ? 'var(--warning)' : 'var(--primary)'};border-radius:100px;box-sizing:border-box;`;
-    title.textContent = round.name;
-    wrapper.appendChild(title);
+    /* 상단 라운드 이름 헤더 */
+    const hdr = document.createElement('div');
+    hdr.style.cssText = [
+      `position:absolute`,
+      `left:${boxLeft}px`,`top:${PAD_V}px`,
+      `width:${BOX_W}px`,`height:${HEADER_H - 6}px`,
+      `display:flex`,`align-items:center`,`justify-content:center`,
+      `font-weight:800`,`font-size:0.8rem`,`letter-spacing:0.4px`,
+      `border-radius:100px`,`box-sizing:border-box`,
+      isFinal
+        ? `color:white;background:linear-gradient(135deg,#f59e0b,#d97706);border:1.5px solid #f59e0b;`
+        : `color:var(--primary);background:var(--primary-light);border:1.5px solid var(--primary);`
+    ].join(';');
+    hdr.textContent = round.name;
+    canvas.appendChild(hdr);
 
     round.matches.forEach((match, mi) => {
-      const slotTop = HEADER_H + PAD_TOP + mi * slotH;
-      const boxY = slotTop + (slotH - BOX_H) / 2;
-      const cy = boxY + BOX_H / 2;
+      const slotTop = HEADER_H + PAD_V + mi * slotH;
+      const boxTop  = slotTop + (slotH - BOX_H) / 2;
+      const cy      = boxTop + BOX_H / 2;
       cys.push(cy);
 
-      const isWalkover = match.isWalkover || false;
-      const canSelect = match.player1 && match.player2 && !isWalkover;
+      const isWO     = match.isWalkover || false;
+      const canVote  = match.player1 && match.player2 && !isWO;
 
+      /* ── 왼쪽 라운드 레이블 ── */
+      const lbl = document.createElement('div');
+      lbl.style.cssText = [
+        `position:absolute`,
+        `left:${colLeft}px`,`top:${boxTop}px`,
+        `width:${LABEL_W - 4}px`,`height:${BOX_H}px`,
+        `display:flex`,`align-items:center`,`justify-content:center`,
+      ].join(';');
+      lbl.innerHTML = `<span style="
+        font-size:0.68rem;font-weight:800;line-height:1.3;text-align:center;
+        white-space:nowrap;padding:4px 5px;border-radius:6px;
+        ${isFinal
+          ? 'color:#92400e;background:#fef3c7;border:1.5px solid #f59e0b;'
+          : 'color:var(--primary);background:var(--primary-light);border:1.5px solid var(--primary);'
+        }
+      ">${round.name}</span>`;
+      canvas.appendChild(lbl);
+
+      /* ── 매치 카드 ── */
       const makeRow = (name, isP1) => {
-        const seed = isP1 ? match.seed1 : match.seed2;
-        const isWin = match.winner === name && name;
-        // Bye: opposite slot is null in walkover
-        const isByeSlot = isWalkover && !name;
-        const displayLabel = isByeSlot ? 'BYE'
-          : (isWalkover && isWin ? `${name} (부전승)` : (name || ''));
-        const cls = isWin ? (isWalkover ? 'mrow mwalkover' : 'mrow mwinner')
-          : (isByeSlot ? 'mrow mbye' : 'mrow');
-        const radio = canSelect && name
+        const seed   = isP1 ? match.seed1 : match.seed2;
+        const isWin  = !!(match.winner && match.winner === name);
+        const isBye  = isWO && !name;
+        const label  = isBye ? 'BYE' : (isWO && isWin ? `${name} (부전승)` : (name || ''));
+        let rowCls   = 'mrow';
+        if (isWin && !isWO) rowCls += ' mwinner';
+        if (isWin && isWO)  rowCls += ' mwalkover';
+        if (isBye)          rowCls += ' mbye';
+        const radio  = canVote && name
           ? `<input type="radio" name="m_${match.id}" id="${match.id}_p${isP1?1:2}" ${isWin?'checked':''} onchange="selectWinner('${match.id}',${isP1?1:2})">`
           : '';
-        const seedBadge = ri === 0 && seed ? `<span class="seed-pill">${seed}</span>` : '';
-        return `<div class="${cls}" style="height:36px;min-height:36px;">
-          <label for="${match.id}_p${isP1?1:2}" style="${isByeSlot?'color:#94a3b8;font-style:italic;':''}">${radio}${seedBadge}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayLabel}</span></label>
+        const badge  = ri === 0 && seed
+          ? `<span class="seed-pill">${seed}</span>` : '';
+        return `<div class="${rowCls}" style="height:${BOX_H/2 - 0.5}px;min-height:0;">
+          <label for="${match.id}_p${isP1?1:2}" style="${isBye?'color:#94a3b8;font-style:italic;':''}">
+            ${radio}${badge}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</span>
+          </label>
         </div>`;
       };
 
-      // Print button: absolutely positioned right-center, only for non-walkover
-      const printBtn = isWalkover ? ''
-        : `<button class="btn-print-match" style="position:absolute;right:-36px;top:50%;transform:translateY(-50%);width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;font-size:0.8rem;border-radius:50%;z-index:10;" onclick="printMatchCard('${match.id}')">🖨</button>`;
-
       const card = document.createElement('div');
       card.className = `match-card${isFinal ? ' final-card' : ''}`;
-      card.style.cssText = `position:absolute;left:${colX}px;top:${boxY}px;width:${BOX_W}px;`;
-      // No VS divider - just two player rows stacked with a simple divider line
+      card.style.cssText = `position:absolute;left:${boxLeft}px;top:${boxTop}px;width:${BOX_W}px;height:${BOX_H}px;overflow:hidden;`;
       card.innerHTML = `
         ${makeRow(match.player1, true)}
-        <div style="height:1px;background:var(--border);"></div>
+        <div style="height:1px;background:var(--border);flex-shrink:0;"></div>
         ${makeRow(match.player2, false)}
-        ${printBtn}
       `;
-      wrapper.appendChild(card);
+      canvas.appendChild(card);
+
+      /* ── 인쇄 버튼 (부전승 제외) ── */
+      if (!isWO) {
+        const pBtn = document.createElement('button');
+        pBtn.className = 'btn-print-match';
+        pBtn.title = '경기 카드 인쇄';
+        pBtn.innerHTML = '🖨️';
+        pBtn.style.cssText = [
+          `position:absolute`,
+          `left:${boxLeft + BOX_W + 6}px`,
+          `top:${cy - 15}px`,
+          `width:30px`,`height:30px`,
+          `padding:0`,`font-size:0.82rem`,
+          `border-radius:50%`,`z-index:5`,
+          `display:flex`,`align-items:center`,`justify-content:center`,
+        ].join(';');
+        pBtn.addEventListener('click', () => printMatchCard(match.id));
+        canvas.appendChild(pBtn);
+      }
     });
   });
 
-  /* SVG connectors */
-  rounds.forEach((round, ri) => {
+  /* ── SVG connector lines ── */
+  rounds.forEach((_, ri) => {
     if (ri >= rounds.length - 1) return;
-    const curr = centerYs[ri], next = centerYs[ri + 1];
-    const fromX = ri * (BOX_W + COL_GAP) + BOX_W;
-    const toX = (ri + 1) * (BOX_W + COL_GAP);
-    const midX = fromX + (toX - fromX) / 2;
+    const curr  = centerYs[ri];
+    const next  = centerYs[ri + 1];
+    const fromX = ri * (COL_W + COL_GAP) + LABEL_W + BOX_W;
+    const toX   = (ri + 1) * (COL_W + COL_GAP) + LABEL_W;
+    const midX  = fromX + (toX - fromX) / 2;
 
     for (let i = 0; i < curr.length; i += 2) {
-      const y1 = curr[i], y2 = curr[i + 1] ?? y1;
+      const y1   = curr[i];
+      const y2   = curr[i + 1] ?? y1;
       const midY = (y1 + y2) / 2;
-      const ni = Math.floor(i / 2);
-      const yn = next[ni] ?? midY;
-      const color = '#c7d2e8';
-      [
-        `M ${fromX} ${y1} H ${midX} V ${midY}`,
-        `M ${fromX} ${y2} H ${midX} V ${midY}`,
-        `M ${midX} ${midY} V ${yn} H ${toX}`
+      const yn   = next[Math.floor(i / 2)] ?? midY;
+
+      [`M ${fromX} ${y1} H ${midX} V ${midY}`,
+       `M ${fromX} ${y2} H ${midX} V ${midY}`,
+       `M ${midX} ${midY} V ${yn} H ${toX}`
       ].forEach(d => {
-        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', d); path.setAttribute('fill', 'none');
-        path.setAttribute('stroke', color); path.setAttribute('stroke-width', '1.5');
-        path.setAttribute('stroke-linecap', 'round');
-        svg.appendChild(path);
+        const p = document.createElementNS('http://www.w3.org/2000/svg','path');
+        p.setAttribute('d', d);
+        p.setAttribute('fill', 'none');
+        p.setAttribute('stroke', '#c7d2e8');
+        p.setAttribute('stroke-width', '1.5');
+        p.setAttribute('stroke-linecap', 'round');
+        svg.appendChild(p);
       });
     }
   });
 
-  wrapper.appendChild(svg);
-  const wrap = document.createElement('div');
-  wrap.className = 'tournament-wrap';
-  wrap.appendChild(wrapper);
-  container.appendChild(wrap);
+  scrollWrap.appendChild(canvas);
+  container.appendChild(scrollWrap);
 
   if (league.tournament.champion) {
     const cb = document.createElement('div');
