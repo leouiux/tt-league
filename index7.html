@@ -199,7 +199,7 @@ th.sortable:hover { background: var(--primary-light); }
 
 /* ── TOURNAMENT BRACKET ── */
 .tournament-wrap {
-  overflow-x: auto; padding: 24px 16px;
+  overflow-x: auto; overflow-y: visible; padding: 24px 50px 24px 16px;
   background: linear-gradient(135deg, #f0f2f7 0%, #eef0fe 100%);
   border-radius: var(--radius); border: 1.5px solid var(--border);
 }
@@ -241,6 +241,7 @@ th.sortable:hover { background: var(--primary-light); }
 .mrow:last-of-type { border-bottom: none; }
 .mrow.mwinner { background: var(--success-light); }
 .mrow.mwalkover { background: #eff6ff; color: #1d4ed8; }
+.mrow.mbye { background: var(--surface2); }
 .mrow label { cursor: pointer; flex: 1; display: flex; align-items: center; gap: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text); }
 .mrow input[type="radio"] { flex-shrink: 0; width: 14px; height: 14px; accent-color: var(--primary); cursor: pointer; }
 .seed-pill {
@@ -781,49 +782,91 @@ window.updateScore = (gn, p1, p2, val) => {
 /* ───────────────────────────── standings ─────────────────────────────── */
 function computeStats(gn) {
   const g = masterData[curId].groups[gn];
+  const manualRanks = g.manualRanks || {};
+
+  // 1. 기본 스탯 계산
   let stats = g.names.map(name => {
     let s = { id: g.playerIds[name], name, w: 0, l: 0, sW: 0, sL: 0, pts: 0 };
     g.names.forEach(opp => {
       if (name === opp) return;
       const m = g.results[name][opp];
-      if (m?.done) { s.sW += m.s1; s.sL += m.s2; m.s1 > m.s2 ? (s.w++, s.pts += 2) : (s.l++, s.pts += 1); }
+      if (m?.done) {
+        s.sW += m.s1; s.sL += m.s2;
+        m.s1 > m.s2 ? (s.w++, s.pts += 2) : (s.l++, s.pts += 1);
+      }
     });
-    s.diff = s.sW - s.sL; return s;
+    s.diff = s.sW - s.sL;
+    return s;
   });
-
-  let ranked = [...stats].sort((a, b) => b.pts - a.pts || b.diff - a.diff);
-  let i = 0;
-  while (i < ranked.length) {
-    let ti = [ranked[i]], j = i + 1;
-    while (j < ranked.length && ranked[j].pts === ranked[i].pts && ranked[j].diff === ranked[i].diff) { ti.push(ranked[j]); j++; }
-    if (ti.length > 1) {
-      ti = ti.map(p => {
-        let h2 = 0, h2W = 0, h2L = 0;
-        ti.forEach(o => { if (p.name !== o.name) { const m = g.results[p.name][o.name]; if (m?.done) { h2W += m.s1; h2L += m.s2; if (m.s1 > m.s2) h2++; } } });
-        return { ...p, h2, h2D: h2W - h2L };
-      });
-      ti.sort((a, b) => b.h2 - a.h2 || b.h2D - a.h2D);
-      ti.forEach((p, k) => ranked[i + k] = p);
-    }
-    i = j;
-  }
 
   const done = g.names.reduce((c, n1) => c + g.names.filter(n2 => n1 < n2 && g.results[n1][n2]?.done).length, 0);
   const noRes = done === 0;
   const ec = masterData[curId].eliminateCount || 0;
 
+  // 2. 1차 정렬: 승점 → 전체 세트 득실차
+  let ranked = [...stats].sort((a, b) => b.pts - a.pts || b.diff - a.diff);
+
+  // 3. 동률 그룹 처리
+  let i = 0;
+  while (i < ranked.length) {
+    let j = i + 1;
+    while (j < ranked.length && ranked[j].pts === ranked[i].pts && ranked[j].diff === ranked[i].diff) j++;
+    const tieGroup = ranked.slice(i, j);
+
+    if (tieGroup.length > 1 && !noRes) {
+      // 각 선수에 동률 내 통계 부여
+      const enriched = tieGroup.map(p => {
+        let h2hW = 0, h2hSW = 0, h2hSL = 0;
+        tieGroup.forEach(o => {
+          if (p.name === o.name) return;
+          const m = g.results[p.name][o.name];
+          if (m?.done) { h2hSW += m.s1; h2hSL += m.s2; if (m.s1 > m.s2) h2hW++; }
+        });
+        return { ...p, h2hW, h2hDiff: h2hSW - h2hSL };
+      });
+
+      // 우선순위: ① 승자승(h2hW) → ② 동률간 세트득실(h2hDiff) → ③ 전체세트득실(diff) → ④ 수동선택
+      enriched.sort((a, b) => {
+        if (b.h2hW !== a.h2hW) return b.h2hW - a.h2hW;
+        if (b.h2hDiff !== a.h2hDiff) return b.h2hDiff - a.h2hDiff;
+        if (b.diff !== a.diff) return b.diff - a.diff;
+        // 수동선택: manualRanks 기준
+        const mA = manualRanks[a.name], mB = manualRanks[b.name];
+        if (mA !== undefined && mB !== undefined) return mA - mB;
+        if (mA !== undefined) return -1;
+        if (mB !== undefined) return 1;
+        return 0;
+      });
+
+      enriched.forEach((p, k) => { ranked[i + k] = p; });
+    }
+    i = j;
+  }
+
+  // 4. 최종 rank 부여 및 완전동률(수동선택 필요) 감지
   let cr = 1;
   ranked.forEach((p, idx) => {
     p.isTied = false;
-    if (idx === 0) p.rank = cr;
+    p.needsManual = false;
+    if (idx === 0) { p.rank = cr; }
     else {
       const prev = ranked[idx - 1];
-      if (!noRes && p.pts === prev.pts && p.diff === prev.diff && p.h2 === prev.h2 && p.h2D === prev.h2D) { p.rank = prev.rank; p.isTied = prev.isTied = true; }
-      else { cr = idx + 1; p.rank = cr; }
+      const sameH2H = (p.h2hW !== undefined && prev.h2hW !== undefined)
+        ? (p.h2hW === prev.h2hW && p.h2hDiff === prev.h2hDiff && p.diff === prev.diff)
+        : (p.pts === prev.pts && p.diff === prev.diff);
+      if (!noRes && sameH2H) {
+        // 수동선택으로 구분됐는지 확인
+        const mA = manualRanks[prev.name], mB = manualRanks[p.name];
+        if (mA !== undefined && mB !== undefined && mA !== mB) {
+          cr = idx + 1; p.rank = cr;
+        } else {
+          p.rank = prev.rank; p.isTied = prev.isTied = true; p.needsManual = prev.needsManual = true;
+        }
+      } else { cr = idx + 1; p.rank = cr; }
     }
     p.isEliminated = noRes ? false : ec > 0 && p.rank > ranked.length - ec;
     const x = stats.find(s => s.name === p.name);
-    x.rank = p.rank; x.isTied = p.isTied; x.isEliminated = p.isEliminated;
+    Object.assign(x, { rank: p.rank, isTied: p.isTied, needsManual: p.needsManual, isEliminated: p.isEliminated, h2hW: p.h2hW, h2hDiff: p.h2hDiff });
   });
   return { stats, ranked };
 }
@@ -833,19 +876,42 @@ function updateStandings(gn) {
   const ec = masterData[curId].eliminateCount || 0;
   const opt = groupSortOptions[gn];
   const d = masterData[curId];
+  const g = d.groups[gn];
+  const manualRanks = g.manualRanks || {};
   const sorted = [...stats].sort((a, b) => opt.order === 'asc' ? (a[opt.key] > b[opt.key] ? 1 : -1) : (a[opt.key] < b[opt.key] ? 1 : -1));
 
   document.querySelector(`#standings-${gn} tbody`).innerHTML = sorted.map(s => {
-    const rowBg = s.isTied ? 'background:var(--danger-light);' : '';
+    const rowBg = s.needsManual ? 'background:#fff7ed;' : (s.isTied ? 'background:#fef3c7;' : '');
     let badge = '';
     if (ec > 0) badge = s.isEliminated ? '<span class="badge badge-elim">탈락</span>' : '<span class="badge badge-promote">진출</span>';
+
+    // 완전동률 → select 박스로 순위 수동선택
+    let rankCell = '';
+    if (s.needsManual) {
+      const tiedGroup = sorted.filter(x => x.needsManual && x.rank === s.rank || (x.needsManual && sorted.filter(y=>y.needsManual).some(y=>y.rank===x.rank)));
+      const allTied = sorted.filter(x => x.needsManual);
+      const groupRanks = allTied.map(x => x.rank);
+      const minRank = Math.min(...groupRanks);
+      const maxRank = Math.min(minRank + allTied.length - 1, ranked.length);
+      const options = [];
+      for (let r = minRank; r <= maxRank; r++) {
+        const sel = (manualRanks[s.name] === r) ? 'selected' : '';
+        options.push(`<option value="${r}" ${sel}>${r}위</option>`);
+      }
+      rankCell = `<select onchange="setManualRank('${gn}','${s.name}',this.value)" style="font-size:0.78rem;border:1.5px solid var(--warning);border-radius:5px;padding:2px 6px;background:#fff7ed;font-weight:700;cursor:pointer;color:var(--text);outline:none;">
+        <option value="">순위선택</option>${options.join('')}
+      </select>`;
+    } else {
+      rankCell = `<span style="font-weight:800;">${s.rank}</span>${s.isTied ? ' <span style="font-size:0.7rem;color:var(--warning);">동률</span>' : ''}`;
+    }
+
     return `<tr style="${rowBg}">
       <td style="color:var(--text3);">${s.id}</td>
       <td style="font-weight:700;white-space:nowrap;text-align:left;padding-left:8px;">${displayName(d, s.name)}</td>
-      <td>${s.w}W ${s.l}L</td>
+      <td>${s.w} / ${s.l}</td>
       <td style="font-weight:700;color:${s.diff>0?'var(--success)':s.diff<0?'var(--danger)':'var(--text3)'};">${s.diff>0?'+':''}${s.diff}</td>
       <td style="font-weight:700;color:var(--primary);">${s.pts}</td>
-      <td style="font-weight:800;">${s.rank}${s.isTied?' 🔴':''}</td>
+      <td>${rankCell}</td>
       <td>${badge}</td>
     </tr>`;
   }).join('');
@@ -854,6 +920,18 @@ function updateStandings(gn) {
 window.handleSort = (gn, key) => {
   const o = groupSortOptions[gn];
   if (o.key === key) o.order = o.order === 'asc' ? 'desc' : 'asc'; else { o.key = key; o.order = 'asc'; }
+  updateStandings(gn);
+};
+
+window.setManualRank = function(gn, playerName, rankVal) {
+  const g = masterData[curId].groups[gn];
+  if (!g.manualRanks) g.manualRanks = {};
+  if (rankVal === '' || rankVal === null) {
+    delete g.manualRanks[playerName];
+  } else {
+    g.manualRanks[playerName] = parseInt(rankVal);
+  }
+  save(true);
   updateStandings(gn);
 };
 
@@ -975,15 +1053,15 @@ function renderTournament() {
   if (!rounds?.length) return;
 
   /* Layout constants */
-  const BOX_W = 196, BOX_H = 100, COL_GAP = 50, HEADER_H = 38, PAD_TOP = 10;
+  const BOX_W = 218, BOX_H = 72, COL_GAP = 56, HEADER_H = 42, PAD_TOP = 12;
   const ROUND_N = rounds.length;
   const FIRST_MATCH_N = rounds[0].matches.length;
-  const SLOT_H = Math.max(BOX_H + 24, 124);
-  const TOTAL_H = FIRST_MATCH_N * SLOT_H + HEADER_H + PAD_TOP * 2;
+  const SLOT_H = BOX_H + 20; // fixed 20px gap between match boxes
+  const TOTAL_H = FIRST_MATCH_N * SLOT_H + HEADER_H + PAD_TOP * 2 + 20;
   const TOTAL_W = ROUND_N * (BOX_W + COL_GAP) + COL_GAP;
 
   const wrapper = document.createElement('div');
-  wrapper.style.cssText = `position:relative;width:${TOTAL_W}px;height:${TOTAL_H}px;`;
+  wrapper.style.cssText = `position:relative;width:${TOTAL_W}px;height:${TOTAL_H}px;overflow:visible;`;
 
   const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
   svg.setAttribute('width', TOTAL_W); svg.setAttribute('height', TOTAL_H);
@@ -1017,21 +1095,35 @@ function renderTournament() {
       const makeRow = (name, isP1) => {
         const seed = isP1 ? match.seed1 : match.seed2;
         const isWin = match.winner === name && name;
-        const cls = isWin ? (isWalkover ? 'mrow mwalkover' : 'mrow mwinner') : 'mrow';
-        const label = isWalkover && isWin ? `${name || ''} (부전승)` : (name || '');
-        const radio = canSelect && name ? `<input type="radio" name="m_${match.id}" id="${match.id}_p${isP1?1:2}" ${isWin?'checked':''} onchange="selectWinner('${match.id}',${isP1?1:2})">` : '';
+        // Bye: opposite slot is null in walkover
+        const isByeSlot = isWalkover && !name;
+        const displayLabel = isByeSlot ? 'BYE'
+          : (isWalkover && isWin ? `${name} (부전승)` : (name || ''));
+        const cls = isWin ? (isWalkover ? 'mrow mwalkover' : 'mrow mwinner')
+          : (isByeSlot ? 'mrow mbye' : 'mrow');
+        const radio = canSelect && name
+          ? `<input type="radio" name="m_${match.id}" id="${match.id}_p${isP1?1:2}" ${isWin?'checked':''} onchange="selectWinner('${match.id}',${isP1?1:2})">`
+          : '';
         const seedBadge = ri === 0 && seed ? `<span class="seed-pill">${seed}</span>` : '';
-        return `<div class="${cls}">
-          <label for="${match.id}_p${isP1?1:2}">${radio}${seedBadge}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${label}</span></label>
+        return `<div class="${cls}" style="height:36px;min-height:36px;">
+          <label for="${match.id}_p${isP1?1:2}" style="${isByeSlot?'color:#94a3b8;font-style:italic;':''}">${radio}${seedBadge}<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayLabel}</span></label>
         </div>`;
       };
 
-      const printBtn = isWalkover ? '' : `<div class="match-footer"><button class="btn-print-match" onclick="printMatchCard('${match.id}')">🖨️ 인쇄</button></div>`;
+      // Print button: absolutely positioned right-center, only for non-walkover
+      const printBtn = isWalkover ? ''
+        : `<button class="btn-print-match" style="position:absolute;right:-36px;top:50%;transform:translateY(-50%);width:30px;height:30px;padding:0;display:flex;align-items:center;justify-content:center;font-size:0.8rem;border-radius:50%;z-index:10;" onclick="printMatchCard('${match.id}')">🖨</button>`;
 
       const card = document.createElement('div');
       card.className = `match-card${isFinal ? ' final-card' : ''}`;
       card.style.cssText = `position:absolute;left:${colX}px;top:${boxY}px;width:${BOX_W}px;`;
-      card.innerHTML = `${makeRow(match.player1, true)}<div class="match-vs">VS</div>${makeRow(match.player2, false)}${printBtn}`;
+      // No VS divider - just two player rows stacked with a simple divider line
+      card.innerHTML = `
+        ${makeRow(match.player1, true)}
+        <div style="height:1px;background:var(--border);"></div>
+        ${makeRow(match.player2, false)}
+        ${printBtn}
+      `;
       wrapper.appendChild(card);
     });
   });
@@ -1129,14 +1221,14 @@ window.printMatchCard = function(matchId) {
 html,body{width:100%;height:100%;font-family:'Malgun Gothic',sans-serif;}
 body{display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;padding:10px;}
 .card{width:100%;height:calc(100vh - 20px);display:flex;flex-direction:column;border:2.5px solid #1a1f36;border-radius:12px;overflow:hidden;}
-.hd{background:#1a1f36;color:white;text-align:center;padding:18px;font-size:26pt;font-weight:900;letter-spacing:-0.5px;flex-shrink:0;}
+.hd{background:#fff;color:#1a1f36;text-align:center;padding:18px;font-size:26pt;font-weight:900;letter-spacing:-0.5px;flex-shrink:0;border-bottom:2px solid #1a1f36;}
 .body{flex:1;display:flex;flex-direction:column;}
 .players{display:flex;flex:1;}
 .pl{flex:1;display:flex;align-items:center;justify-content:center;font-size:44pt;font-weight:900;color:#1a1f36;text-align:center;padding:16px;word-break:keep-all;}
 .pl:first-child{border-right:2px dashed #cbd5e1;}
 .score-row{display:flex;flex:2;border-top:2px solid #1a1f36;}
 .sc{flex:1;} .sc:first-child{border-right:2px dashed #cbd5e1;}
-.ft{background:#f8fafc;padding:10px;text-align:center;font-size:12pt;color:#64748b;font-weight:600;border-top:2px solid #e4e8f0;flex-shrink:0;}
+.ft{background:#fff;padding:10px;text-align:center;font-size:12pt;color:#1a1f36;font-weight:600;border-top:2px solid #e4e8f0;flex-shrink:0;}
 .pbtn{display:block;margin:12px auto 0;padding:10px 28px;font-size:13pt;background:#5b6cf5;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
 @media print{.pbtn{display:none;}}
 </style></head><body>
