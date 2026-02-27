@@ -3,88 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>탁구 리그 관리 시스템</title>
+    <title>용문 리그/토너먼트</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>🏆 용문리그 통합 관리시스템</h1>
-        <div class="nav-bar">
-            <div class="nav-controls">
-                <strong>📅 대회 선택:</strong>
-                <select id="leagueHistorySelector" aria-label="과거 대회 선택">
-                    <option value="">-- 과거 대회 바로가기 --</option>
-                </select>
-                <button class="btn-sub" id="viewHistoryBtn">지난 대회 리스트</button>
-            </div>
-            <div id="activeControls" class="hidden">
-                <button class="btn-main" id="saveDataBtn">💾 저장</button>
-                <button class="btn-sub" onclick="location.reload()">새 대회</button>
-            </div>
+<div class="app-shell">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="topbar-logo">🏓</div>
+      <span class="topbar-name">용문 리그 · 토너먼트</span>
+    </div>
+    <div class="topbar-actions">
+      <select class="topbar-select" id="leagueHistorySelector">
+        <option value="">-- 과거 대회 선택 --</option>
+      </select>
+      <button class="btn btn-ghost" id="viewHistoryBtn">📋 기록</button>
+      <div id="activeControls" class="hidden flex gap8 flex-wrap">
+        <button class="btn btn-ghost" id="saveDataBtn">💾 저장</button>
+        <button class="btn btn-ghost" id="exportJsonBtn">📤 내보내기</button>
+        <button class="btn btn-ghost" id="importJsonBtn">📂 가져오기</button>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none">
+        <button class="btn btn-primary" id="goToTournamentBtn">🏆 토너먼트</button>
+        <button class="btn btn-ghost" onclick="location.reload()">🔄 새 대회</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO: initial import -->
+  <div id="initialImport" class="hero-card">
+    <h2>🏆 용문 리그 · 토너먼트 운영시스템</h2>
+    <p>리그전 결과 관리부터 토너먼트 대진표까지 한번에</p>
+    <div class="hero-btns">
+      <button class="hero-btn-primary" id="initialImportBtn">📂 데이터 불러오기</button>
+      <button class="hero-btn-outline" id="startNewLeagueBtn">➕ 새 대회 시작</button>
+    </div>
+    <input type="file" id="initialJsonFileInput" accept=".json" style="display:none">
+  </div>
+
+  <!-- SETUP -->
+  <div id="setupArea" class="hidden">
+    <div class="card">
+      <div class="section-label">대회 설정</div>
+      <div class="setup-grid">
+        <div class="field"><label>날짜</label><input type="date" id="leagueDate"></div>
+        <div class="field" style="grid-column: span 2;"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예: 2026.02 용문리그"></div>
+        <div class="field"><label>조 개수</label><input type="number" id="groupCount" value="4" min="1"></div>
+        <div class="field"><label>조별 인원</label><input type="number" id="playerCount" value="8" min="2"></div>
+        <div class="field"><label>탈락인원(조당)</label><input type="number" id="eliminateCount" value="1" min="0"></div>
+        <div class="field">
+          <label>경기 방식</label>
+          <div class="radio-group">
+            <label><input type="radio" name="gameRule" value="2" checked> 2선승</label>
+            <label><input type="radio" name="gameRule" value="3"> 3선승</label>
+          </div>
         </div>
-    </header>
+      </div>
+      <button class="btn btn-primary btn-lg btn-full" id="prepareNamesBtn">1단계: 선수 명단 입력창 생성</button>
+    </div>
 
-    <main id="setupArea">
-        <section class="config-box-large">
-            <div class="input-group-large">
-                <label for="leagueDate">날짜</label>
-                <input type="date" id="leagueDate" aria-label="대회 날짜">
-            </div>
-            <div class="input-group-large">
-                <label for="leagueTitle">대회명</label>
-                <input type="text" id="leagueTitle" placeholder="예: 2026.01.24 용문리그" aria-label="대회명">
-            </div>
-            <div class="input-group-large">
-                <label for="groupCount">조 개수</label>
-                <input type="number" id="groupCount" value="2" min="1" aria-label="조 개수">
-            </div>
-            <div class="input-group-large">
-                <label for="playerCount">조별 인원</label>
-                <input type="number" id="playerCount" value="4" min="2" aria-label="조별 인원">
-            </div>
-            <div class="input-group-large">
-                <label>방식</label>
-                <div class="radio-group-large" role="radiogroup" aria-label="경기 방식">
-                    <label><input type="radio" name="gameRule" value="2" checked> 2선승</label>
-                    <label><input type="radio" name="gameRule" value="3"> 3선승</label>
-                </div>
-            </div>
-        </section>
-        <button class="btn-main btn-huge full-width" id="prepareNamesBtn">1단계: 이름 입력창 생성</button>
-        
-        <section id="nameInputArea" class="hidden mt-40">
-            <h2 style="font-size: clamp(1.2rem, 3vw, 1.5rem); margin-bottom: 15px;">👤 선수 명단 입력</h2>
-            <div id="nameInputs"></div>
-            <button class="btn-main btn-huge full-width mt-20" id="startLeagueBtn">2단계: 전체 조 매트릭스 생성</button>
-        </section>
-    </main>
+    <div id="nameInputArea" class="hidden mt24">
+      <div class="card">
+        <div class="name-section-header">
+          <div class="name-section-title">👤 선수 명단 입력</div>
+          <div class="name-section-actions">
+            <button class="btn btn-cyan btn-sm" id="bulkInputBtn">📋 한번에 등록</button>
+            <button class="btn btn-warn btn-sm" id="directTournamentBtn">⚡ 토너먼트 바로진행</button>
+          </div>
+        </div>
+        <div id="nameInputs"></div>
+        <div class="mt16">
+          <button class="btn btn-primary btn-lg btn-full" id="startLeagueBtn">2단계: 전체 조 매트릭스 생성 (랜덤 배치)</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-    <section id="mainDashboard" class="hidden mt-40">
-        <div id="allGroupsContainer"></div>
-    </section>
+  <!-- MAIN DASHBOARD -->
+  <div id="mainDashboard" class="hidden mt24">
+    <div id="leagueTitleBanner"></div>
+    <div id="allGroupsContainer"></div>
+  </div>
+
+  <!-- TOURNAMENT -->
+  <div id="tournamentArea" class="hidden mt24">
+    <div class="card" style="padding:16px 20px; margin-bottom:16px;">
+      <div class="flex items-center justify-between flex-wrap gap8">
+        <div class="flex items-center gap12">
+          <div style="background:linear-gradient(135deg,var(--primary),var(--accent));width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;box-shadow:0 4px 12px rgba(91,108,245,0.3);">🏆</div>
+          <div>
+            <div style="font-weight:800;font-size:1.05rem;">토너먼트 대진표</div>
+            <div id="tournamentSubtitle" style="font-size:0.78rem;color:var(--text3);">Single Elimination</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost" id="backToLeagueBtn">← 리그전으로</button>
+      </div>
+    </div>
+    <div id="tournamentTitleBanner"></div>
+    <div id="tournamentBracket"></div>
+  </div>
+
 </div>
 
-<div id="listLayer" class="layer-overlay" role="dialog" aria-labelledby="layerTitle" aria-modal="true">
-    <div class="layer-content">
-        <div class="layer-header">
-            <h3 id="layerTitle">저장된 대회 리스트</h3>
-            <button class="close-btn" id="closeLayerBtn" aria-label="닫기">✕</button>
-        </div>
-        <div class="history-table">
-            <table id="saveListContainer">
-                <thead>
-                    <tr>
-                        <th>날짜</th>
-                        <th>대회명</th>
-                        <th>관리</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
+<!-- HISTORY MODAL -->
+<div id="historyModal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 저장된 대회 목록</div>
+      <button class="modal-close" id="closeHistoryBtn">✕</button>
     </div>
+    <div class="table-wrap">
+      <table class="hist-table">
+        <thead><tr><th>날짜</th><th>대회명</th><th>관리</th></tr></thead>
+        <tbody id="histTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- BULK INPUT MODAL -->
+<div id="bulkModal" class="modal-bg">
+  <div class="modal bulk-modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 선수 명단 한번에 등록</div>
+      <button class="modal-close" id="bulkCancelBtn">✕</button>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.7;">
+      한 행에 1명씩 · 문자=이름 · 숫자=부수<br>
+      예) <strong>홍길동2</strong> · 부수 낮을수록 강함 → 자동 교차 배분
+    </div>
+    <textarea id="bulkTextarea" placeholder="홍길동2&#10;마동탁6&#10;이순신3&#10;..."></textarea>
+    <div class="flex gap8">
+      <button class="btn btn-primary btn-full" id="bulkConfirmBtn">✔ 입력</button>
+      <button class="btn btn-ghost" id="bulkCancelBtn2" style="flex:1;">취소</button>
+    </div>
+  </div>
 </div>
 
 <script src="script.js"></script>
