@@ -335,6 +335,28 @@ th.sortable:hover { background: var(--primary-light); }
 .text-primary { color: var(--primary); }
 
 /* ── RESPONSIVE ── */
+@media (max-width: 600px) {
+  .app-shell { padding: 12px 10px; }
+  .topbar { padding: 10px 12px; gap: 8px; }
+  .topbar-actions { width: 100%; flex-wrap: wrap; gap: 6px; }
+  .topbar-select { min-width: 0; width: 100%; box-sizing: border-box; }
+  .topbar-actions .btn, .topbar-actions button { flex: 1 1 auto; min-width: 0; font-size: 0.78rem; padding: 7px 10px; }
+  #activeControls { width: 100%; flex-wrap: wrap; }
+  .setup-grid { grid-template-columns: 1fr 1fr; }
+  .field input, .field select { font-size: 0.88rem; padding: 8px 10px; width: 100%; box-sizing: border-box; }
+  .name-section-header { flex-direction: column; align-items: flex-start; }
+  .name-section-actions { width: 100%; }
+  .name-grid { grid-template-columns: 1fr 1fr; }
+  .p-name { width: 100%; box-sizing: border-box; }
+  .group-input-card { padding: 12px; }
+  .bulk-modal { max-width: calc(100vw - 32px); width: 100%; margin: 0; }
+  .modal { padding: 16px; }
+  .modal-bg { padding: 12px; align-items: flex-end; }
+  .bulk-modal textarea { height: 220px; }
+  .group-header { flex-direction: column; align-items: flex-start; }
+  .group-header-actions { width: 100%; flex-wrap: wrap; }
+  .group-header-actions .btn { flex: 1 1 auto; min-width: 0; font-size: 0.72rem; }
+}
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
   .group-layout { grid-template-columns: 1fr 420px; }
@@ -346,4 +368,15 @@ th.sortable:hover { background: var(--primary-light); }
   body { background: white; }
   .topbar, button, .modal-bg { display: none !important; }
   .app-shell { padding: 0; }
+}
+
+/* ── DRAG RANK TOOLTIP ── */
+#dragRankTooltip {
+  position: fixed; pointer-events: none; z-index: 9999;
+  background: var(--primary); color: white;
+  font-size: 0.85rem; font-weight: 800;
+  padding: 5px 12px; border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(91,108,245,0.4);
+  white-space: nowrap; display: none;
+  transform: translate(14px, -50%);
 }
