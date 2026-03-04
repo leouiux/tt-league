@@ -374,9 +374,10 @@ th.sortable:hover { background: var(--primary-light); }
 #dragRankTooltip {
   position: fixed; pointer-events: none; z-index: 9999;
   background: var(--primary); color: white;
-  font-size: 0.85rem; font-weight: 800;
-  padding: 5px 12px; border-radius: 20px;
-  box-shadow: 0 4px 16px rgba(91,108,245,0.4);
+  font-size: 1rem; font-weight: 900;
+  padding: 6px 16px; border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(91,108,245,0.55);
   white-space: nowrap; display: none;
-  transform: translate(14px, -50%);
+  border: 2px solid rgba(255,255,255,0.4);
+  letter-spacing: 0.5px;
 }
