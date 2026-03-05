@@ -1156,7 +1156,7 @@ th { background: #e8eaf0; border: 1.5px solid #000; font-size: ${cellFontPt}pt; 
 td { border: 1.5px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; }
 tbody tr { height: calc((100vh - 28px - 60px) / ${rows}); }
 .th-num, .td-num { text-align: center; font-weight: 700; color: #555; }
-.th-name, .td-name { text-align: left; padding-left: 5px; font-weight: 700; }
+.th-name, .td-name { text-align: center; font-weight: 700; }
 .th-check, .td-check { text-align: center; }
 .th-gap, .td-gap { width: 6px; background: transparent; border: none; padding: 0; }
 .pbtn { display: block; margin: 8px auto 0; padding: 7px 24px; font-size: 11pt; background: #5b6cf5; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
