@@ -309,7 +309,7 @@ th.sortable:hover { background: var(--primary-light); }
 }
 .title-banner-text { flex: 1; }
 .title-banner-name {
-  font-size: 1.45rem; font-weight: 900; color: white;
+  font-size: 2.5rem; font-weight: 900; color: white;
   letter-spacing: -0.3px; line-height: 1.2;
 }
 .title-banner-meta {
@@ -350,12 +350,25 @@ th.sortable:hover { background: var(--primary-light); }
   .p-name { width: 100%; box-sizing: border-box; }
   .group-input-card { padding: 12px; }
   .bulk-modal { max-width: calc(100vw - 32px); width: 100%; margin: 0; }
-  .modal { padding: 16px; }
-  .modal-bg { padding: 12px; align-items: flex-end; }
+  .modal {
+    padding: 16px;
+    width: calc(100vw - 32px);
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  .modal-bg {
+    padding: 16px;
+    align-items: center;
+    justify-content: center;
+  }
+  .hist-table { width: 100%; table-layout: fixed; }
+  .hist-table th, .hist-table td { word-break: break-word; overflow-wrap: anywhere; }
   .bulk-modal textarea { height: 220px; }
   .group-header { flex-direction: column; align-items: flex-start; }
   .group-header-actions { width: 100%; flex-wrap: wrap; }
   .group-header-actions .btn { flex: 1 1 auto; min-width: 0; font-size: 0.72rem; }
+  .title-banner-name { font-size: 1.45rem; }
 }
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
