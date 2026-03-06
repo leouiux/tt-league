@@ -217,49 +217,32 @@ function processBulk() {
   applyAffilColors();
 }
 
-// 소속별 파스텔 배경색 + 중복 감지
-// 각 스타일: { background, outline } — 색상+패턴으로 확실히 구분
+// 소속별 배경색 — 뚜렷한 파스텔 단색 + 굵은 왼쪽 컬러 테두리로 깔끔하게 구분
 const AFFIL_STYLES = [
-  // 1. 산호 — 단색
-  { bg: '#ffe4e1', border: '#f87171', pattern: '' },
-  // 2. 하늘 — 가로 흰 줄무늬
-  { bg: '#dbeafe', border: '#60a5fa', pattern: 'repeating-linear-gradient(0deg,transparent,transparent 6px,rgba(255,255,255,0.55) 6px,rgba(255,255,255,0.55) 7px)' },
-  // 3. 연두 — 세로 흰 줄무늬
-  { bg: '#d1fae5', border: '#34d399', pattern: 'repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(255,255,255,0.55) 6px,rgba(255,255,255,0.55) 7px)' },
-  // 4. 연보라 — 사선 흰 줄무늬
-  { bg: '#ede9fe', border: '#a78bfa', pattern: 'repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(255,255,255,0.5) 5px,rgba(255,255,255,0.5) 6px)' },
-  // 5. 노랑 — 체크 패턴
-  { bg: '#fef9c3', border: '#facc15', pattern: 'repeating-conic-gradient(rgba(255,255,255,0.45) 0% 25%,transparent 0% 50%) 0 0/10px 10px' },
-  // 6. 분홍 — 역사선 줄무늬
-  { bg: '#fce7f3', border: '#f472b6', pattern: 'repeating-linear-gradient(-45deg,transparent,transparent 5px,rgba(255,255,255,0.5) 5px,rgba(255,255,255,0.5) 6px)' },
-  // 7. 청록 — 큰 체크
-  { bg: '#ccfbf1', border: '#2dd4bf', pattern: 'repeating-conic-gradient(rgba(255,255,255,0.4) 0% 25%,transparent 0% 50%) 0 0/16px 16px' },
-  // 8. 오렌지 — 점선(가로+세로)
-  { bg: '#ffedd5', border: '#fb923c', pattern: 'radial-gradient(circle,rgba(255,255,255,0.7) 1px,transparent 1px) 0 0/8px 8px' },
-  // 9. 라임 — 단색(진하게)
-  { bg: '#ecfccb', border: '#84cc16', pattern: '' },
-  // 10. 인디고 — 가는 사선
-  { bg: '#e0e7ff', border: '#818cf8', pattern: 'repeating-linear-gradient(60deg,transparent,transparent 4px,rgba(255,255,255,0.45) 4px,rgba(255,255,255,0.45) 5px)' },
-  // 11. 민트 — 촘촘 점선
-  { bg: '#d1fae5', border: '#10b981', pattern: 'radial-gradient(circle,rgba(255,255,255,0.65) 1px,transparent 1px) 0 0/5px 5px' },
-  // 12. 로즈 — 체크+색
-  { bg: '#ffe4e6', border: '#fb7185', pattern: 'repeating-conic-gradient(rgba(255,255,255,0.35) 0% 25%,transparent 0% 50%) 0 0/12px 12px' },
-  // 13. 앰버 — 세로 줄
-  { bg: '#fef3c7', border: '#f59e0b', pattern: 'repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.5) 8px,rgba(255,255,255,0.5) 9px)' },
-  // 14. 바이올렛 — 역큰사선
-  { bg: '#f5f3ff', border: '#7c3aed', pattern: 'repeating-linear-gradient(-60deg,transparent,transparent 6px,rgba(255,255,255,0.45) 6px,rgba(255,255,255,0.45) 7px)' },
-  // 15. 시안 — 점+줄
-  { bg: '#cffafe', border: '#22d3ee', pattern: 'radial-gradient(circle,rgba(255,255,255,0.6) 1px,transparent 1px) 0 0/10px 10px,repeating-linear-gradient(0deg,transparent,transparent 9px,rgba(255,255,255,0.35) 9px,rgba(255,255,255,0.35) 10px)' },
+  { bg: '#fde8e8', border: '#e05252' }, // 빨강 계열
+  { bg: '#dbeafe', border: '#2563eb' }, // 파랑 계열
+  { bg: '#d1fae5', border: '#059669' }, // 초록 계열
+  { bg: '#fef9c3', border: '#ca8a04' }, // 노랑 계열
+  { bg: '#ede9fe', border: '#7c3aed' }, // 보라 계열
+  { bg: '#fce7f3', border: '#db2777' }, // 분홍 계열
+  { bg: '#ffedd5', border: '#ea580c' }, // 주황 계열
+  { bg: '#cffafe', border: '#0891b2' }, // 청록 계열
+  { bg: '#ecfccb', border: '#65a30d' }, // 라임 계열
+  { bg: '#e0e7ff', border: '#4338ca' }, // 인디고 계열
+  { bg: '#fdf4ff', border: '#9333ea' }, // 자주 계열
+  { bg: '#fff1f2', border: '#e11d48' }, // 로즈 계열
+  { bg: '#f0fdf4', border: '#16a34a' }, // 연초록 계열
+  { bg: '#fff7ed', border: '#d97706' }, // 앰버 계열
+  { bg: '#f0f9ff', border: '#0284c7' }, // 하늘 계열
 ];
 
 function applyAffilColors() {
   const inputs = Array.from(document.querySelectorAll('.p-name'));
-  // 소속 수집 (등장 순서대로 스타일 할당)
-  const affilStyleMap = {}; // affil → AFFIL_STYLES[i]
+  // 소속 수집
+  const affilStyleMap = {};
   let styleIdx = 0;
   inputs.forEach(el => {
-    const raw = el.value.trim();
-    const m = raw.match(/\(([^)]+)\)/);
+    const m = el.value.trim().match(/\(([^)]+)\)/);
     const affil = m ? m[1] : '';
     if (affil && !(affil in affilStyleMap)) {
       affilStyleMap[affil] = AFFIL_STYLES[styleIdx % AFFIL_STYLES.length];
@@ -268,44 +251,35 @@ function applyAffilColors() {
   });
 
   // 중복 감지
-  const seen = {};
-  const dupKeys = new Set();
+  const seen = {}, dupKeys = new Set();
   inputs.forEach(el => {
-    const raw = el.value.trim();
-    if (!raw) return;
-    const key = raw.toLowerCase().replace(/\s+/g,'');
+    const key = el.value.trim().toLowerCase().replace(/\s+/g,'');
+    if (!key) return;
     if (seen[key]) dupKeys.add(key);
     seen[key] = true;
   });
 
   inputs.forEach(el => {
     const raw = el.value.trim();
-    if (!raw) {
-      el.style.background = '';
-      el.style.outline = '';
-      el.style.borderColor = '';
-      return;
-    }
+    // 스타일 초기화
+    el.style.background = '';
+    el.style.borderLeft = '';
+    el.style.borderColor = '';
+    el.style.outline = '';
+
+    if (!raw) return;
+
     const key = raw.toLowerCase().replace(/\s+/g,'');
     if (dupKeys.has(key)) {
       el.style.background = '#fee2e2';
-      el.style.outline = '2px solid #ef4444';
-      el.style.borderColor = '#ef4444';
+      el.style.borderLeft = '4px solid #ef4444';
     } else {
       const m = raw.match(/\(([^)]+)\)/);
       const affil = m ? m[1] : '';
       if (affil && affilStyleMap[affil]) {
         const s = affilStyleMap[affil];
-        // pattern 있으면 배경색+패턴 겹치기
-        el.style.background = s.pattern
-          ? `${s.pattern}, ${s.bg}`
-          : s.bg;
-        el.style.outline = `2px solid ${s.border}`;
-        el.style.borderColor = s.border;
-      } else {
-        el.style.background = '';
-        el.style.outline = '';
-        el.style.borderColor = '';
+        el.style.background = s.bg;
+        el.style.borderLeft = `4px solid ${s.border}`;
       }
     }
   });
@@ -1535,7 +1509,6 @@ window.handleDelete = id => {
   renderHistory(); updateSelector();
   if (curId === id) location.reload();
 };
-
 
 
 
