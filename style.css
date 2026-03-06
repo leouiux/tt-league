@@ -363,25 +363,40 @@ th.sortable:hover { background: var(--primary-light); }
     align-items: center;
     justify-content: center;
   }
-  .hist-table { width: 100%; table-layout: fixed; }
-  .hist-table th, .hist-table td { word-break: break-word; overflow-wrap: anywhere; }
+  /* 기록 팝업 테이블 관리열 깨짐 수정 */
+  .hist-table { width: 100%; table-layout: auto; }
+  .hist-table th, .hist-table td { word-break: keep-all; font-size: 0.75rem; padding: 6px 4px; }
+  .hist-table td:last-child { white-space: nowrap; }
+  .hist-table .btn { padding: 4px 6px; font-size: 0.7rem; }
   .bulk-modal textarea { height: 220px; }
-  .group-header { flex-direction: column; align-items: flex-start; }
-  .group-header-actions { width: 100%; flex-wrap: wrap; }
-  .group-header-actions .btn { flex: 1 1 auto; min-width: 0; font-size: 0.72rem; }
+  .group-header { flex-direction: row; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .group-header-actions { flex-wrap: wrap; }
+  .group-header-actions .btn { font-size: 0.78rem; padding: 7px 12px; }
   .title-banner-name { font-size: 1.45rem; }
+  .title-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .title-banner > div:first-child { width: 100%; }
+  .title-banner > div:last-child { width: 100%; justify-content: stretch; }
+  .title-banner > div:last-child button { flex: 1; font-size: 0.78rem; padding: 8px 10px; text-align: center; }
+  /* 타이브레이커 팝업 모바일 최적화 */
+  #tiebreakerModal .modal {
+    max-width: calc(100vw - 24px);
+    width: calc(100vw - 24px);
+    max-height: 88vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 12px;
+  }
+  #tiebreakerModal .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  #tiebreakerModal table { min-width: 0; font-size: 0.72rem; }
+  #tiebreakerModal th, #tiebreakerModal td { padding: 4px 3px; }
+  #tiebreakerModal input[type="text"] { width: 68px !important; font-size: 0.72rem !important; padding: 3px 4px !important; }
+  #tiebreakerModal select.matrix-select { min-width: 44px !important; font-size: 0.72rem; }
 }
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
 }
 @media (min-width: 1158px) {
   .group-layout { grid-template-columns: 1fr 420px; }
-}
-@media (max-width: 600px) {
-  .title-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .title-banner > div:first-child { width: 100%; }
-  .title-banner > div:last-child { width: 100%; justify-content: stretch; }
-  .title-banner > div:last-child button { flex: 1; font-size: 0.78rem; padding: 8px 10px; text-align: center; }
 }
 @media (min-width: 1200px) {
   .setup-grid { grid-template-columns: repeat(6, 1fr); }
