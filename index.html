@@ -70,7 +70,7 @@
         <div class="name-section-header">
           <div class="name-section-title" style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">
             👤 선수 명단 입력
-            <span style="font-weight:400;font-size:0.75rem;color:var(--text3);">(한번에 등록 버튼을 이용하면 각 조에 높은 부수부터 낮은 부수까지 골고루 자동으로 배분됩니다)</span>
+            <span style="font-weight:400;font-size:0.75rem;color:var(--text3);">(한번에 등록 버튼을 이용하면 소속이 최대한 겹치지 않고 각 조에 높은 부수부터 낮은 부수까지 골고루 자동으로 배분됩니다)</span>
           </div>
           <div class="name-section-actions">
             <button class="btn btn-cyan btn-sm" id="bulkInputBtn">📋 한번에 등록</button>
@@ -138,12 +138,72 @@
       한 행에 1명씩 입력 · <strong>이름&nbsp;&nbsp;소속&nbsp;&nbsp;등급</strong> 순서로 띄어쓰기로 구분<br>
       예) <strong>홍길동 조아 2</strong> &nbsp;→&nbsp; 이름: 홍길동, 소속: 조아, 등급: 2<br>
       <span style="color:var(--primary);">· 등급 숫자가 낮을수록 강함 (등급 기준 자동 교차 배분)</span><br>
-      <span style="color:var(--primary);">· 같은 소속이 같은 조에 몰리지 않도록 자동 배분</span>
+      <span style="color:var(--primary);">· 같은 소속이 같은 조에 몰리지 않도록 자동 배분</span><br>
+      <span style="color:var(--warning);font-weight:700;">· 밴드에서 한번에 복사한 텍스트 붙여넣기로 입력하세요!</span>
     </div>
     <textarea id="bulkTextarea" placeholder="홍길동 조아 2&#10;마동탁 나라 6&#10;이순신 다가 3&#10;..."></textarea>
     <div class="flex gap8">
       <button class="btn btn-primary btn-full" id="bulkConfirmBtn">✔ 입력</button>
       <button class="btn btn-ghost" id="bulkCancelBtn2" style="flex:1;">취소</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- TIEBREAKER MODAL -->
+<div id="tiebreakerModal" class="modal-bg">
+  <div class="modal" style="max-width:680px;max-height:92vh;overflow-y:auto;">
+    <div class="modal-header" style="flex-wrap:wrap;gap:6px;">
+      <div>
+        <div class="modal-title">⚖️ 동률간 승자 계산하기</div>
+        <div style="font-size:0.75rem;color:var(--text3);margin-top:2px;">이름입력은 이름+부수 형태로 입력해주세요. 예) 홍길동2</div>
+      </div>
+      <button class="modal-close" onclick="closeTiebreaker()">✕</button>
+    </div>
+
+    <!-- STEP 1: 설정 -->
+    <div id="tbStep1">
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+        <div class="field" style="flex:1;min-width:120px;">
+          <label>동률 인원 수</label>
+          <input type="number" id="tbPlayerCount" min="2" max="10" value="3" style="width:100%;">
+        </div>
+        <div class="field">
+          <label>경기 방식</label>
+          <div class="radio-group">
+            <label><input type="radio" name="tbRule" value="2" checked> 2선승</label>
+            <label><input type="radio" name="tbRule" value="3"> 3선승</label>
+          </div>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-full" onclick="initTiebreaker()">▶ 동률간 승자 계산하기</button>
+    </div>
+
+    <!-- STEP 2: 매트릭스 + 순위표 -->
+    <div id="tbStep2" class="hidden">
+      <div style="display:grid;grid-template-columns:1fr;gap:16px;" id="tbGridWrap">
+        <!-- 매트릭스 -->
+        <div>
+          <div class="section-label">명단 및 동률간 승/패 입력</div>
+          <div class="table-wrap"><table><thead id="tbHead"></thead><tbody id="tbBody"></tbody></table></div>
+        </div>
+        <!-- 순위표 -->
+        <div>
+          <div class="section-label">순위표</div>
+          <div class="table-wrap">
+            <table id="tbStandings">
+              <thead><tr><th>이름</th><th>전적</th><th>득실</th><th>순위</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <div style="font-size:0.72rem;color:var(--text3);margin-top:6px;text-align:center;font-weight:600;">
+            동률순위는 승자승 - 세트득실 - 상위부 - 연장자순
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;">
+        <button class="btn btn-ghost btn-full" onclick="resetTiebreaker()">↺ 새로 입력하기</button>
+      </div>
     </div>
   </div>
 </div>
