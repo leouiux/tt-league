@@ -1703,7 +1703,6 @@ function renderTbStandings() {
   }
 
   // 전경기 입력 여부 확인
-  const n = players.length;
   const totalMatches = n * (n - 1); // 양방향
   const filledMatches = Object.keys(tbData.results).length;
   const allFilled = filledMatches >= totalMatches;
