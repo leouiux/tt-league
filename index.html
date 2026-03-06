@@ -150,6 +150,7 @@
 </div>
 
 
+
 <!-- TIEBREAKER MODAL -->
 <div id="tiebreakerModal" class="modal-bg">
   <div class="modal" style="max-width:680px;max-height:92vh;overflow-y:auto;">
@@ -189,15 +190,17 @@
         </div>
         <!-- 순위표 -->
         <div>
-          <div class="section-label">순위표</div>
+          <div class="section-label" style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
+            순위표
+            <span style="font-size:0.68rem;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text3);">
+              (<span id="tb-rule-h2h">승자승</span> - <span id="tb-rule-diff">세트득실</span> - <span id="tb-rule-grade">상위부</span> - <span id="tb-rule-age">연장자순</span>)
+            </span>
+          </div>
           <div class="table-wrap">
             <table id="tbStandings">
               <thead><tr><th>이름</th><th>전적</th><th>득실</th><th>순위</th></tr></thead>
               <tbody></tbody>
             </table>
-          </div>
-          <div style="font-size:0.72rem;color:var(--text3);margin-top:6px;text-align:center;font-weight:600;">
-            동률순위는 승자승 - 세트득실 - 상위부 - 연장자순
           </div>
         </div>
       </div>
