@@ -134,11 +134,13 @@
       <div class="modal-title">📋 선수 명단 한번에 등록</div>
       <button class="modal-close" id="bulkCancelBtn">✕</button>
     </div>
-    <div style="font-size:0.8rem;color:var(--text2);line-height:1.7;">
-      한 행에 1명씩 · 문자=이름 · 숫자=부수<br>
-      예) <strong>홍길동2</strong> · 부수 낮을수록 강함 → 자동 교차 배분
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.9;">
+      한 행에 1명씩 입력 · <strong>이름&nbsp;&nbsp;소속&nbsp;&nbsp;등급</strong> 순서로 띄어쓰기로 구분<br>
+      예) <strong>홍길동 조아 2</strong> &nbsp;→&nbsp; 이름: 홍길동, 소속: 조아, 등급: 2<br>
+      <span style="color:var(--primary);">· 등급 숫자가 낮을수록 강함 (등급 기준 자동 교차 배분)</span><br>
+      <span style="color:var(--primary);">· 같은 소속이 같은 조에 몰리지 않도록 자동 배분</span>
     </div>
-    <textarea id="bulkTextarea" placeholder="홍길동2&#10;마동탁6&#10;이순신3&#10;..."></textarea>
+    <textarea id="bulkTextarea" placeholder="홍길동 조아 2&#10;마동탁 나라 6&#10;이순신 다가 3&#10;..."></textarea>
     <div class="flex gap8">
       <button class="btn btn-primary btn-full" id="bulkConfirmBtn">✔ 입력</button>
       <button class="btn btn-ghost" id="bulkCancelBtn2" style="flex:1;">취소</button>
