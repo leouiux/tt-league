@@ -27,7 +27,7 @@
         <button class="btn btn-ghost" id="exportJsonBtn">📤 내보내기</button>
         <button class="btn btn-ghost" id="importJsonBtn">📂 가져오기</button>
         <input type="file" id="jsonFileInput" accept=".json" style="display:none">
-        <button class="btn btn-primary" id="goToTournamentBtn">🏆 토너먼트</button>
+        <button class="btn btn-primary" id="goToTournamentBtn">🏆 토너먼트 진행</button>
         <button class="btn btn-ghost" onclick="location.reload()">🔄 새 대회</button>
       </div>
     </div>
@@ -50,7 +50,7 @@
       <div class="section-label">대회 설정</div>
       <div class="setup-grid">
         <div class="field"><label>날짜</label><input type="date" id="leagueDate"></div>
-        <div class="field" style="grid-column: span 2;"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예: 2026.02 용문리그"></div>
+        <div class="field" style="grid-column: span 2;"><label>대회명</label><input type="text" id="leagueTitle" placeholder="예) 용문리그 - 용문부"></div>
         <div class="field"><label>조 개수</label><input type="number" id="groupCount" value="4" min="1"></div>
         <div class="field"><label>조별 인원</label><input type="number" id="playerCount" value="8" min="2"></div>
         <div class="field"><label>탈락인원(조당)</label><input type="number" id="eliminateCount" value="1" min="0"></div>
@@ -120,7 +120,7 @@
     </div>
     <div class="table-wrap">
       <table class="hist-table">
-        <thead><tr><th>날짜</th><th>대회명</th><th>관리</th></tr></thead>
+        <thead><tr><th>날짜</th><th>시간</th><th>대회명</th><th>관리</th></tr></thead>
         <tbody id="histTableBody"></tbody>
       </table>
     </div>

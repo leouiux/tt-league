@@ -373,7 +373,15 @@ th.sortable:hover { background: var(--primary-light); }
 }
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
+}
+@media (min-width: 1158px) {
   .group-layout { grid-template-columns: 1fr 420px; }
+}
+@media (max-width: 600px) {
+  .title-banner { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .title-banner > div:first-child { width: 100%; }
+  .title-banner > div:last-child { width: 100%; justify-content: stretch; }
+  .title-banner > div:last-child button { flex: 1; font-size: 0.78rem; padding: 8px 10px; text-align: center; }
 }
 @media (min-width: 1200px) {
   .setup-grid { grid-template-columns: repeat(6, 1fr); }
