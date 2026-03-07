@@ -1977,34 +1977,35 @@ window.printAllPlayers = function() {
   tableInner += `</tbody>`;
 
   const w = window.open('', '_blank');
-  // A4 landscape, margin 15mm → 가용: 267mm × 180mm = 756.85pt × 510.24pt
-  // 제목 높이 약 28pt, 여백 4pt → 표 가용 높이 ≈ 478pt
-  // thead 20pt, tbody = rows행 → 각 행 height = floor((478-20) / rows)
+  // A4 landscape: 297mm × 210mm
+  // margin: top/left/right 15mm, bottom 5mm → 인쇄 가용: 267mm × 190mm
+  // 제목 약 22pt(~7.8mm) + mb 3pt → 표 가용 높이 ≈ 190mm - 8.5mm = 181.5mm ≈ 514pt
+  // thead 20pt → tbody 가용 = 514 - 20 = 494pt
   const theadPt = 20;
-  const availPt = 458; // 478 - 20
-  const rowHPt  = Math.floor(availPt / rows);
+  const rowHPt  = Math.floor(494 / rows);
 
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} 참가자명단</title>
 <style>
-@page { size: A4 landscape; margin: 15mm; }
+@page { size: A4 landscape; margin: 15mm 15mm 5mm 15mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 267mm; height: 180mm; overflow: hidden; font-family: 'Malgun Gothic', sans-serif; }
-body { display: flex; flex-direction: column; }
-h1 { text-align: center; font-size: ${Math.min(titleFontPt, 16)}pt; font-weight: 900; margin-bottom: 3pt; flex-shrink: 0; letter-spacing: -0.3px; line-height: 1.1; }
+html, body { font-family: 'Malgun Gothic', sans-serif; background: #fff; }
+h1 { text-align: center; font-size: ${Math.min(titleFontPt, 16)}pt; font-weight: 900; margin-bottom: 3pt; letter-spacing: -0.3px; line-height: 1.1; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 thead tr { height: ${theadPt}pt; }
 th { background: #e8eaf0; border: 1px solid #000; font-size: ${cellFontPt}pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; }
-tbody tr { height: ${rowHPt}pt; max-height: ${rowHPt}pt; }
-td { border: 1px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; padding: 0 2pt; overflow: hidden; }
+tbody tr { height: ${rowHPt}pt; }
+td { border: 1px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; padding: 0 2pt; }
 .th-num, .td-num { text-align: center; font-weight: 700; color: #555; }
 .th-name, .td-name { text-align: center; font-weight: 700; }
 .th-check, .td-check { text-align: center; }
 .th-gap, .td-gap { background: transparent; border: none; padding: 0; }
-.pbtn { display: block; margin: 4pt auto 0; padding: 4pt 18pt; font-size: 9pt; background: #5b6cf5; color: white; border: none; border-radius: 5pt; cursor: pointer; font-weight: bold; }
+.pbtn { display: block; margin: 10px auto; padding: 8px 28px; font-size: 11pt; background: #5b6cf5; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
 @media print {
   .pbtn { display: none; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tbody tr { height: ${rowHPt}pt; max-height: ${rowHPt}pt; overflow: hidden; }
+  td { overflow: hidden; }
 }
 </style></head><body>
 <h1>${league.title} 참가자명단</h1>
@@ -2036,33 +2037,34 @@ window.printGroupMatrix = function(gn) {
   const n = g.names.length;
   // 셀 폰트: 인원수에 따라 자동 조절
   const cellFontPt = Math.min(15, Math.max(7, Math.floor(120 / (n + 2))));
-  // A4 landscape, margin 6mm → 가용: 285mm × 198mm ≈ 808pt × 561pt
-  // h2 약 24pt + mb 3pt, 경기순서 약 20pt, 여백 합계 ≈ 50pt
-  // 테이블 가용 높이 = 561 - 50 = 511pt, 행 수 = n+1(헤더포함)
-  const tableAvailPt = 511;
+  // A4 landscape: 297mm × 210mm
+  // margin: top/left/right 6mm, bottom 5mm → 인쇄 가용: 285mm × 199mm
+  // h2 약 20pt + mb 2pt, 경기순서 약 18pt, 여백 합계 ≈ 42pt
+  // 테이블 가용 높이 ≈ 199mm×(72/25.4) - 42 ≈ 564 - 42 = 522pt
+  const tableAvailPt = 522;
   const rowHPt = Math.floor(tableAvailPt / (n + 1));
 
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} - ${gn}</title>
 <style>
-@page{size:A4 landscape;margin:6mm;}
+@page{size:A4 landscape;margin:6mm 6mm 5mm 6mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{width:285mm;height:198mm;overflow:hidden;font-family:'Malgun Gothic',sans-serif;}
-body{display:flex;flex-direction:column;}
-h2{text-align:center;font-size:${Math.min(17,Math.max(11,cellFontPt+3))}pt;font-weight:900;margin-bottom:2pt;flex-shrink:0;display:flex;align-items:baseline;justify-content:center;gap:8pt;line-height:1.1;}
+html,body{font-family:'Malgun Gothic',sans-serif;background:#fff;}
+h2{text-align:center;font-size:${Math.min(17,Math.max(11,cellFontPt+3))}pt;font-weight:900;margin-bottom:2pt;display:flex;align-items:baseline;justify-content:center;gap:8pt;line-height:1.1;}
 .print-hint{font-size:7pt;font-weight:700;color:#dc2626;white-space:nowrap;}
-table{width:100%;border-collapse:collapse;table-layout:fixed;flex-shrink:0;}
-th,td{border:1px solid #000;padding:0 2pt;text-align:center;font-size:${cellFontPt}pt;font-weight:bold;vertical-align:middle;height:${rowHPt}pt;overflow:hidden;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+th,td{border:1px solid #000;padding:0 2pt;text-align:center;font-size:${cellFontPt}pt;font-weight:bold;vertical-align:middle;height:${rowHPt}pt;}
 th{background:#f0f0f0;}
 .pn{text-align:left;padding-left:4pt;word-break:keep-all;}
-.sched{margin-top:2pt;flex-shrink:0;}
+.sched{margin-top:2pt;}
 .sched-matches{text-align:left;line-height:1.45;font-size:5.5pt;font-weight:600;}
 .sched-item{display:inline-block;white-space:nowrap;margin-right:4pt;}
-.pbtn{display:block;margin:4pt auto 0;padding:4pt 18pt;font-size:9pt;background:#5b6cf5;color:white;border:none;border-radius:5pt;cursor:pointer;font-weight:bold;}
+.pbtn{display:block;margin:10px auto;padding:8px 28px;font-size:11pt;background:#5b6cf5;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
 @media print{
   .pbtn{display:none;}
   .print-hint{display:none;}
   html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  th,td{height:${rowHPt}pt;max-height:${rowHPt}pt;overflow:hidden;}
 }
 </style></head><body>
 <h2>${league.title} — ${gn} 대진표 <span class="print-hint">인쇄 시 머리글/바닥글 체크해제, 배경그래픽 체크 필수!</span></h2>
