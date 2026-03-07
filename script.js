@@ -1339,13 +1339,13 @@ window.printAllPlayers = function() {
   // A4 landscape: margin 상 5mm, 좌우 15mm, 하 10mm → 가용: 267mm × 195mm
   // 제목 24pt(line-height 1.1≈26.4pt) + mb 8pt = 34.4pt
   // thead 20pt → tbody 가용 ≈ 195mm×(72/25.4) - 34.4 - 20 ≈ 553 - 54 = 499pt
-  const theadPt = 23;
+  const theadPt = 30;
   const rowHPt  = Math.floor(499 / rows) - 8 + 2;
 
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} 참가자명단</title>
 <style>
-@page { size: A4 landscape; margin: 5mm 15mm 10mm 15mm; }
+@page { size: A4 landscape; margin: 10mm 15mm 10mm 15mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: 'Malgun Gothic', sans-serif; background: #fff; }
 h1 { text-align: center; font-size: 24pt; font-weight: 900; margin-bottom: 10pt; letter-spacing: -0.3px; line-height: 1.1; }
@@ -1386,7 +1386,7 @@ window.printGroupMatrix = function(gn) {
   for (let round = 0; round < list.length - 1; round++) {
     for (let i = 0; i < list.length / 2; i++) {
       const a = list[i], b = list[list.length - 1 - i];
-      if (a !== 'BYE' && b !== 'BYE') schedule.push(`${nMap[a]} vs ${nMap[b]}`);
+      if (a !== 'BYE' && b !== 'BYE') schedule.push([schedMap[a], schedMap[b]]);
     }
     list.splice(1, 0, list.pop());
   }
@@ -1395,6 +1395,12 @@ window.printGroupMatrix = function(gn) {
   const n = g.names.length;
   // 셀 폰트: 인원수에 따라 자동 조절
   const cellFontPt = Math.min(15, Math.max(7, Math.floor(120 / (n + 2))));
+  // 경기순서 표기용: 이름+등급 (괄호 없이) 예) 홍길동2
+  const schedMap = {};
+  g.names.forEach(nm => {
+    const g2 = getGrade(league, nm);
+    schedMap[nm] = g2 !== null ? `${nm}${g2}` : nm;
+  });
   // A4 landscape: margin 좌우/상단 6mm, 하단 5mm → 가용: 285mm × 199mm
   // h2 18pt(line-height 1.1≈20pt) + mb 5pt, sched ≈18pt, mt 6pt → 여백 합계 ≈ 49pt
   // 테이블 가용 ≈ 199mm×(72/25.4) - 49 ≈ 564 - 49 = 515pt
@@ -1415,7 +1421,7 @@ th{background:#f0f0f0;}
 .pn{text-align:center;padding-left:0;word-break:keep-all;}
 .sched{margin-top:6pt;}
 .sched-matches{text-align:left;line-height:2;font-size:6.5pt;font-weight:600;}
-.sched-item{display:inline-block;white-space:nowrap;border:1px solid #000;padding:1px 2px;margin:0 4px 5px 0;line-height:1.4;}
+.sched-item{display:inline-block;white-space:nowrap;border:1px solid #000;padding:2px;margin:0 4px 5px 0;line-height:1.4;}
 .pbtn{display:block;margin:10px auto;padding:8px 28px;font-size:11pt;background:#5b6cf5;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
 @media print{
   .pbtn{display:none;}
@@ -1430,7 +1436,7 @@ th{background:#f0f0f0;}
     <tbody>${g.names.map(n1=>`<tr><td class="pn">${nMap[n1]}</td>${g.names.map(n2=>n1===n2?'<td style="background:#e5e7eb;">-</td>':'<td>&nbsp;</td>').join('')}<td>/</td><td>&nbsp;</td><td>&nbsp;</td></tr>`).join('')}</tbody>
   </table>
   <div class="sched">
-    <div class="sched-matches">${schedule.map(s => { const vs = s.split(' vs '); return `<span class="sched-item">${vs[0]}<br>${vs[1] || ''}</span>`; }).join('')}</div>
+    <div class="sched-matches">${schedule.map(([p1, p2]) => `<span class="sched-item">${p1}<br>${p2}</span>`).join('')}</div>
   </div>
   <button class="pbtn" onclick="window.print()">🖨️ 인쇄</button>
 </body></html>`);
