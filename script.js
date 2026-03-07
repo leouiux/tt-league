@@ -1312,56 +1312,62 @@ window.printAllPlayers = function() {
   }
   colgroup += `</colgroup>`;
 
-  let tableHTML = `<table>${colgroup}<thead><tr>`;
+  let tableInner = `${colgroup}<thead><tr>`;
   for (let c = 0; c < cols; c++) {
-    tableHTML += `<th class="th-num">번호</th><th class="th-name">이름</th><th class="th-check">참가</th>`;
-    if (c < cols - 1) tableHTML += `<th class="th-gap"></th>`;
+    tableInner += `<th class="th-num">번호</th><th class="th-name">이름</th><th class="th-check">참가</th>`;
+    if (c < cols - 1) tableInner += `<th class="th-gap"></th>`;
   }
-  tableHTML += `</tr></thead><tbody>`;
+  tableInner += `</tr></thead><tbody>`;
 
   for (let r = 0; r < rows; r++) {
-    tableHTML += `<tr>`;
+    tableInner += `<tr>`;
     for (let c = 0; c < cols; c++) {
       const p = grid[c][r];
       const num = c * rows + r + 1;
       if (p) {
-        tableHTML += `<td class="td-num">${num}</td><td class="td-name">${p.display}</td><td class="td-check"></td>`;
+        tableInner += `<td class="td-num">${num}</td><td class="td-name">${p.display}</td><td class="td-check"></td>`;
       } else {
-        tableHTML += `<td class="td-num"></td><td class="td-name"></td><td class="td-check"></td>`;
+        tableInner += `<td class="td-num"></td><td class="td-name"></td><td class="td-check"></td>`;
       }
-      if (c < cols - 1) tableHTML += `<td class="td-gap"></td>`;
+      if (c < cols - 1) tableInner += `<td class="td-gap"></td>`;
     }
-    tableHTML += `</tr>`;
+    tableInner += `</tr>`;
   }
-  tableHTML += `</tbody></table>`;
+  tableInner += `</tbody>`;
 
   const w = window.open('', '_blank');
+  // A4 landscape, margin 15mm → 가용: 267mm × 180mm = 756.85pt × 510.24pt
+  // 제목 높이 약 28pt, 여백 4pt → 표 가용 높이 ≈ 478pt
+  // thead 20pt, tbody = rows행 → 각 행 height = floor((478-20) / rows)
+  const theadPt = 20;
+  const availPt = 458; // 478 - 20
+  const rowHPt  = Math.floor(availPt / rows);
+
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} 참가자명단</title>
 <style>
 @page { size: A4 landscape; margin: 15mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { font-family: 'Malgun Gothic', sans-serif; }
+html, body { width: 267mm; height: 180mm; overflow: hidden; font-family: 'Malgun Gothic', sans-serif; }
 body { display: flex; flex-direction: column; }
-h1 { text-align: center; font-size: ${titleFontPt}pt; font-weight: 900; margin-bottom: 4pt; flex-shrink: 0; letter-spacing: -0.3px; line-height: 1.15; }
-.table-wrap { flex: 1; }
+h1 { text-align: center; font-size: ${Math.min(titleFontPt, 16)}pt; font-weight: 900; margin-bottom: 3pt; flex-shrink: 0; letter-spacing: -0.3px; line-height: 1.1; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-th { background: #e8eaf0; border: 1px solid #000; font-size: ${cellFontPt}pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 1pt 2pt; }
-td { border: 1px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; height: ${Math.floor(480 / rows)}pt; padding: 0 2pt; }
+thead tr { height: ${theadPt}pt; }
+th { background: #e8eaf0; border: 1px solid #000; font-size: ${cellFontPt}pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; }
+tbody tr { height: ${rowHPt}pt; max-height: ${rowHPt}pt; }
+td { border: 1px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; padding: 0 2pt; overflow: hidden; }
 .th-num, .td-num { text-align: center; font-weight: 700; color: #555; }
 .th-name, .td-name { text-align: center; font-weight: 700; }
 .th-check, .td-check { text-align: center; }
 .th-gap, .td-gap { background: transparent; border: none; padding: 0; }
-.pbtn { display: block; margin: 6pt auto 0; padding: 5pt 20pt; font-size: 10pt; background: #5b6cf5; color: white; border: none; border-radius: 6pt; cursor: pointer; font-weight: bold; }
+.pbtn { display: block; margin: 4pt auto 0; padding: 4pt 18pt; font-size: 9pt; background: #5b6cf5; color: white; border: none; border-radius: 5pt; cursor: pointer; font-weight: bold; }
 @media print {
   .pbtn { display: none; }
-  body { width: 267mm; height: 180mm; overflow: hidden; }
-  table { page-break-inside: avoid; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 </style></head><body>
 <h1>${league.title} 참가자명단</h1>
-<div class="table-wrap">${tableHTML}</div>
+<table>${tableInner}</table>
 <button class="pbtn" onclick="window.print()">🖨️ 인쇄</button>
 </body></html>`);
   w.document.close();
@@ -1387,37 +1393,34 @@ window.printGroupMatrix = function(gn) {
 
   const w = window.open('', '_blank');
   const n = g.names.length;
-  // 셀 폰트: 인원수에 따라 자동 조절 (A4 landscape 기준)
-  const cellFontPt = Math.min(16, Math.max(7, Math.floor(130 / (n + 2))));
-  // 셀 높이: 테이블이 페이지를 꽉 채우도록
-  // A4 landscape 높이 ≈ 190mm, 헤더/여백/경기순서 제외 약 148mm 분배
-  const headerMM = 14; // h2
-  const schedMM  = 10; // 경기순서 영역
-  const padMM    = 8;  // 여백
-  const tableRows = n + 1; // 헤더 1 + 선수 n
-  const cellPadVH = `${Math.floor((100 - 8) / tableRows / 2)}vh`;
+  // 셀 폰트: 인원수에 따라 자동 조절
+  const cellFontPt = Math.min(15, Math.max(7, Math.floor(120 / (n + 2))));
+  // A4 landscape, margin 6mm → 가용: 285mm × 198mm ≈ 808pt × 561pt
+  // h2 약 24pt + mb 3pt, 경기순서 약 20pt, 여백 합계 ≈ 50pt
+  // 테이블 가용 높이 = 561 - 50 = 511pt, 행 수 = n+1(헤더포함)
+  const tableAvailPt = 511;
+  const rowHPt = Math.floor(tableAvailPt / (n + 1));
 
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} - ${gn}</title>
 <style>
 @page{size:A4 landscape;margin:6mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{font-family:'Malgun Gothic',sans-serif;}
+html,body{width:285mm;height:198mm;overflow:hidden;font-family:'Malgun Gothic',sans-serif;}
 body{display:flex;flex-direction:column;}
-h2{text-align:center;font-size:${Math.min(18,Math.max(12,cellFontPt+4))}pt;font-weight:900;margin-bottom:3pt;flex-shrink:0;display:flex;align-items:baseline;justify-content:center;gap:10pt;line-height:1.15;}
-.print-hint{font-size:7.5pt;font-weight:700;color:#dc2626;white-space:nowrap;}
-table{width:100%;border-collapse:collapse;table-layout:fixed;}
-th,td{border:1px solid #000;padding:0 3pt;text-align:center;font-size:${cellFontPt}pt;font-weight:bold;vertical-align:middle;height:${Math.floor(530 / (n + 1))}pt;}
+h2{text-align:center;font-size:${Math.min(17,Math.max(11,cellFontPt+3))}pt;font-weight:900;margin-bottom:2pt;flex-shrink:0;display:flex;align-items:baseline;justify-content:center;gap:8pt;line-height:1.1;}
+.print-hint{font-size:7pt;font-weight:700;color:#dc2626;white-space:nowrap;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;flex-shrink:0;}
+th,td{border:1px solid #000;padding:0 2pt;text-align:center;font-size:${cellFontPt}pt;font-weight:bold;vertical-align:middle;height:${rowHPt}pt;overflow:hidden;}
 th{background:#f0f0f0;}
-.pn{text-align:left;padding-left:5pt;word-break:keep-all;}
-.sched{margin-top:3pt;flex-shrink:0;}
-.sched-matches{text-align:left;line-height:1.55;font-size:6pt;font-weight:600;}
+.pn{text-align:left;padding-left:4pt;word-break:keep-all;}
+.sched{margin-top:2pt;flex-shrink:0;}
+.sched-matches{text-align:left;line-height:1.45;font-size:5.5pt;font-weight:600;}
 .sched-item{display:inline-block;white-space:nowrap;margin-right:4pt;}
-.pbtn{display:block;margin:5pt auto 0;padding:5pt 20pt;font-size:10pt;background:#5b6cf5;color:white;border:none;border-radius:6pt;cursor:pointer;font-weight:bold;}
+.pbtn{display:block;margin:4pt auto 0;padding:4pt 18pt;font-size:9pt;background:#5b6cf5;color:white;border:none;border-radius:5pt;cursor:pointer;font-weight:bold;}
 @media print{
   .pbtn{display:none;}
   .print-hint{display:none;}
-  body{width:285mm;height:198mm;overflow:hidden;}
   html{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
 }
 </style></head><body>
