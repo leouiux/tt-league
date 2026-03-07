@@ -1380,6 +1380,13 @@ window.printGroupMatrix = function(gn) {
   const nMap = {};
   g.names.forEach(n => { nMap[n] = displayName(league, n); });
 
+  // 경기순서 표기용: 이름+등급 괄호 없이, 예) 홍길동2
+  const schedMap = {};
+  g.names.forEach(nm => {
+    const g2 = getGrade(league, nm);
+    schedMap[nm] = g2 !== null ? `${nm}${g2}` : nm;
+  });
+
   // 경기 순서 생성 (리그 방식)
   const schedule = [];
   let list = [...g.names]; if (list.length % 2 === 1) list.push('BYE');
@@ -1395,12 +1402,6 @@ window.printGroupMatrix = function(gn) {
   const n = g.names.length;
   // 셀 폰트: 인원수에 따라 자동 조절
   const cellFontPt = Math.min(15, Math.max(7, Math.floor(120 / (n + 2))));
-  // 경기순서 표기용: 이름+등급 (괄호 없이) 예) 홍길동2
-  const schedMap = {};
-  g.names.forEach(nm => {
-    const g2 = getGrade(league, nm);
-    schedMap[nm] = g2 !== null ? `${nm}${g2}` : nm;
-  });
   // A4 landscape: margin 좌우/상단 6mm, 하단 5mm → 가용: 285mm × 199mm
   // h2 18pt(line-height 1.1≈20pt) + mb 5pt, sched ≈18pt, mt 6pt → 여백 합계 ≈ 49pt
   // 테이블 가용 ≈ 199mm×(72/25.4) - 49 ≈ 564 - 49 = 515pt
