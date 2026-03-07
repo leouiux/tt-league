@@ -1422,7 +1422,8 @@ th{background:#f0f0f0;}
 .pn{text-align:center;padding-left:0;word-break:keep-all;}
 .sched{margin-top:6pt;}
 .sched-matches{text-align:left;line-height:2;font-size:6.5pt;font-weight:600;}
-.sched-item{display:inline-block;white-space:nowrap;border:1px solid #000;padding:2px;margin:0 4px 5px 0;line-height:1.4;}
+.sched-item{display:inline-block;white-space:nowrap;border:1px solid #000;padding:2.5px 2px;margin:0 2.95px 5px 0;line-height:1.5;}
+.sched-item:last-child{margin-right:0;}
 .pbtn{display:block;margin:10px auto;padding:8px 28px;font-size:11pt;background:#5b6cf5;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
 @media print{
   .pbtn{display:none;}
