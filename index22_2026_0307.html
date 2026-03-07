@@ -1977,24 +1977,24 @@ window.printAllPlayers = function() {
   tableInner += `</tbody>`;
 
   const w = window.open('', '_blank');
-  // A4 landscape: margin 좌우 15mm, 상하 10mm → 가용: 267mm × 190mm
-  // 제목 24pt(line-height 1.1 ≈ 26.4pt) + mb 8pt = 34.4pt
-  // thead 20pt → tbody 가용 ≈ 190mm×(72/25.4) - 34.4 - 20 ≈ 539 - 54 = 485pt
+  // A4 landscape: margin 상 5mm, 좌우 15mm, 하 10mm → 가용: 267mm × 195mm
+  // 제목 24pt(line-height 1.1≈26.4pt) + mb 8pt = 34.4pt
+  // thead 20pt → tbody 가용 ≈ 195mm×(72/25.4) - 34.4 - 20 ≈ 553 - 54 = 499pt
   const theadPt = 20;
-  const rowHPt  = Math.floor(485 / rows) - 8;
+  const rowHPt  = Math.floor(499 / rows) - 8 + 2;
 
   w.document.write(`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">
 <title>${league.title} 참가자명단</title>
 <style>
-@page { size: A4 landscape; margin: 10mm 15mm 10mm 15mm; }
+@page { size: A4 landscape; margin: 5mm 15mm 10mm 15mm; }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { font-family: 'Malgun Gothic', sans-serif; background: #fff; }
 h1 { text-align: center; font-size: 24pt; font-weight: 900; margin-bottom: 8pt; letter-spacing: -0.3px; line-height: 1.1; }
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 thead tr { height: ${theadPt}pt; }
-th { background: #e8eaf0; border: 1px solid #000; font-size: ${cellFontPt}pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; }
+th { background: #e8eaf0; border: 1px solid #000; font-size: 12pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; }
 tbody tr { height: ${rowHPt}pt; }
-td { border: 1px solid #000; font-size: ${cellFontPt}pt; vertical-align: middle; padding: 0 2pt; }
+td { border: 1px solid #000; font-size: 12pt; vertical-align: middle; padding: 0 2pt; }
 .th-num, .td-num { text-align: center; font-weight: 700; color: #555; }
 .th-name, .td-name { text-align: center; font-weight: 700; }
 .th-check, .td-check { text-align: center; }
@@ -2048,15 +2048,16 @@ window.printGroupMatrix = function(gn) {
 @page{size:A4 landscape;margin:6mm 6mm 5mm 6mm;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{font-family:'Malgun Gothic',sans-serif;background:#fff;}
-h2{text-align:center;font-size:18pt;font-weight:900;margin-bottom:5pt;display:flex;align-items:baseline;justify-content:center;gap:8pt;line-height:1.1;}
+h2{text-align:center;font-size:18pt;font-weight:900;margin-bottom:8pt;display:flex;align-items:baseline;justify-content:center;gap:8pt;line-height:1.1;}
 .print-hint{font-size:7pt;font-weight:700;color:#dc2626;white-space:nowrap;}
 table{width:100%;border-collapse:collapse;table-layout:fixed;}
-th,td{border:1px solid #000;padding:0 2pt;text-align:center;font-size:${cellFontPt}pt;font-weight:bold;vertical-align:middle;height:${rowHPt}pt;}
+th,td{border:1px solid #000;padding:0 2pt;text-align:center;font-size:11pt;font-weight:bold;vertical-align:middle;height:${rowHPt}pt;}
 th{background:#f0f0f0;}
 .pn{text-align:center;padding-left:0;word-break:keep-all;}
 .sched{margin-top:6pt;}
-.sched-matches{text-align:left;line-height:1.45;font-size:5.5pt;font-weight:600;}
-.sched-item{display:inline-block;white-space:nowrap;margin-right:4pt;}
+.sched-matches{text-align:left;line-height:2;font-size:6pt;font-weight:600;}
+.sched-item{display:inline-block;white-space:nowrap;}
+.sched-sep{display:inline-block;margin:0 4pt;}
 .pbtn{display:block;margin:10px auto;padding:8px 28px;font-size:11pt;background:#5b6cf5;color:white;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
 @media print{
   .pbtn{display:none;}
@@ -2071,7 +2072,7 @@ th{background:#f0f0f0;}
     <tbody>${g.names.map(n1=>`<tr><td class="pn">${nMap[n1]}</td>${g.names.map(n2=>n1===n2?'<td style="background:#e5e7eb;">-</td>':'<td>&nbsp;</td>').join('')}<td>/</td><td>&nbsp;</td><td>&nbsp;</td></tr>`).join('')}</tbody>
   </table>
   <div class="sched">
-    <div class="sched-matches">${schedule.map((s,i) => `<span class="sched-item">${s}${i < schedule.length-1 ? ' /' : ''}</span>`).join(' ')}</div>
+    <div class="sched-matches">${schedule.map((s,i) => `<span class="sched-item">${s}</span>${i < schedule.length-1 ? '<span class="sched-sep">/</span>' : ''}`).join('')}</div>
   </div>
   <button class="pbtn" onclick="window.print()">🖨️ 인쇄</button>
 </body></html>`);
