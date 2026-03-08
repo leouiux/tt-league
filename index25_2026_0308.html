@@ -871,26 +871,25 @@ function processBulk() {
 
 // 소속별 배경색 — 뚜렷한 파스텔 단색 + 굵은 왼쪽 컬러 테두리로 깔끔하게 구분
 const AFFIL_STYLES = [
-  { bg: '#fde8e8', border: '#e05252' }, // 빨강 계열
-  { bg: '#dbeafe', border: '#2563eb' }, // 파랑 계열
-  { bg: '#d1fae5', border: '#059669' }, // 초록 계열
-  { bg: '#fef9c3', border: '#ca8a04' }, // 노랑 계열
-  { bg: '#ede9fe', border: '#7c3aed' }, // 보라 계열
-  { bg: '#fce7f3', border: '#db2777' }, // 분홍 계열
-  { bg: '#ffedd5', border: '#ea580c' }, // 주황 계열
-  { bg: '#cffafe', border: '#0891b2' }, // 청록 계열
-  { bg: '#ecfccb', border: '#65a30d' }, // 라임 계열
-  { bg: '#e0e7ff', border: '#4338ca' }, // 인디고 계열
-  { bg: '#fdf4ff', border: '#9333ea' }, // 자주 계열
-  { bg: '#fff1f2', border: '#e11d48' }, // 로즈 계열
-  { bg: '#f0fdf4', border: '#16a34a' }, // 연초록 계열
-  { bg: '#fff7ed', border: '#d97706' }, // 앰버 계열
-  { bg: '#f0f9ff', border: '#0284c7' }, // 하늘 계열
+  { bg: 'rgb(253,232,232)', border: 'rgb(255,53,53)',   bt:'3px', br:'1px', bb:'1px', bl:'4px' }, // 빨강
+  { bg: 'rgb(224,231,255)', border: 'rgb(12,0,154)',    bt:'1px', br:'3px', bb:'1px', bl:'4px' }, // 파랑
+  { bg: 'rgb(254,249,195)', border: 'rgb(255,173,0)',   bt:'1px', br:'1px', bb:'3px', bl:'4px' }, // 노랑
+  { bg: 'rgb(236,252,203)', border: 'rgb(135,229,0)',   bt:'4px', br:'1px', bb:'1px', bl:'3px' }, // 라임
+  { bg: 'rgb(253,244,255)', border: 'rgb(204,148,255)', bt:'1px', br:'4px', bb:'3px', bl:'1px' }, // 보라
+  { bg: '#fce7f3', border: '#db2777', bt:'3px', br:'1px', bb:'4px', bl:'1px' }, // 분홍
+  { bg: '#ffedd5', border: '#ea580c', bt:'1px', br:'4px', bb:'1px', bl:'3px' }, // 주황
+  { bg: '#cffafe', border: '#0891b2', bt:'4px', br:'3px', bb:'1px', bl:'1px' }, // 청록
+  { bg: '#d1fae5', border: '#059669', bt:'1px', br:'1px', bb:'4px', bl:'3px' }, // 초록
+  { bg: '#e0e7ff', border: '#4338ca', bt:'3px', br:'4px', bb:'1px', bl:'1px' }, // 인디고
+  { bg: '#fff1f2', border: '#e11d48', bt:'1px', br:'3px', bb:'4px', bl:'1px' }, // 로즈
+  { bg: '#f0fdf4', border: '#16a34a', bt:'4px', br:'1px', bb:'3px', bl:'1px' }, // 연초록
+  { bg: '#fff7ed', border: '#d97706', bt:'1px', br:'1px', bb:'3px', bl:'4px' }, // 앰버
+  { bg: '#f0f9ff', border: '#0284c7', bt:'3px', br:'1px', bb:'1px', bl:'4px' }, // 하늘
+  { bg: '#fdf4ff', border: '#9333ea', bt:'1px', br:'4px', bb:'1px', bl:'3px' }, // 자주
 ];
 
 function applyAffilColors() {
   const inputs = Array.from(document.querySelectorAll('.p-name'));
-  // 소속 수집
   const affilStyleMap = {};
   let styleIdx = 0;
   inputs.forEach(el => {
@@ -902,7 +901,6 @@ function applyAffilColors() {
     }
   });
 
-  // 중복 감지
   const seen = {}, dupKeys = new Set();
   inputs.forEach(el => {
     const key = el.value.trim().toLowerCase().replace(/\s+/g,'');
@@ -913,10 +911,11 @@ function applyAffilColors() {
 
   inputs.forEach(el => {
     const raw = el.value.trim();
-    // 스타일 초기화
     el.style.background = '';
+    el.style.borderTop = '';
+    el.style.borderRight = '';
+    el.style.borderBottom = '';
     el.style.borderLeft = '';
-    el.style.borderColor = '';
     el.style.outline = '';
 
     if (!raw) return;
@@ -924,14 +923,20 @@ function applyAffilColors() {
     const key = raw.toLowerCase().replace(/\s+/g,'');
     if (dupKeys.has(key)) {
       el.style.background = '#fee2e2';
-      el.style.borderLeft = '4px solid #ef4444';
+      el.style.borderTop    = '3px solid #ef4444';
+      el.style.borderRight  = '3px solid #ef4444';
+      el.style.borderBottom = '3px solid #ef4444';
+      el.style.borderLeft   = '4px solid #ef4444';
     } else {
       const m = raw.match(/\(([^)]+)\)/);
       const affil = m ? m[1] : '';
       if (affil && affilStyleMap[affil]) {
         const s = affilStyleMap[affil];
-        el.style.background = s.bg;
-        el.style.borderLeft = `4px solid ${s.border}`;
+        el.style.background   = s.bg;
+        el.style.borderTop    = `${s.bt} solid ${s.border}`;
+        el.style.borderRight  = `${s.br} solid ${s.border}`;
+        el.style.borderBottom = `${s.bb} solid ${s.border}`;
+        el.style.borderLeft   = `${s.bl} solid ${s.border}`;
       }
     }
   });
@@ -1908,23 +1913,28 @@ window.printAllPlayers = function() {
   const league = masterData[curId];
   if (!league) return;
 
-  // 전체 선수 수집 후 가나다 순 정렬
-  const all = [];
-  Object.keys(league.groups).sort().forEach(gn => {
-    league.groups[gn].names.forEach(name => {
-      all.push({ name, display: displayName(league, name) });
-    });
+  // 조별로 선수 수집 → 각 조 내 가나다 정렬 → 번호는 조별 1번부터
+  const groupNames = Object.keys(league.groups).sort();
+  const groupedPlayers = []; // [{gn, players:[{name,display}]}]
+  groupNames.forEach(gn => {
+    const names = [...league.groups[gn].names].sort((a, b) => a.localeCompare(b, 'ko'));
+    groupedPlayers.push({ gn, players: names.map(name => ({ name, display: displayName(league, name) })) });
   });
-  all.sort((a, b) => a.name.localeCompare(b.name, 'ko'));
+
+  // 전체를 조별 순서대로 flat 배열로 만들되 번호는 조별 1번부터
+  // 4열 세로우선: 조 순서대로 채움
+  const all = []; // {display, num, gn}
+  groupedPlayers.forEach(({ gn, players }) => {
+    players.forEach((p, i) => all.push({ display: p.display, num: i + 1, gn }));
+  });
 
   const total = all.length;
   if (!total) { alert('선수 명단이 없습니다.'); return; }
 
-  // 4열 고정, 세로우선 배치
   const cols = 4;
   const rows = Math.ceil(total / cols);
 
-  // 세로우선 배치: [col][row] = player index
+  // 세로우선 배치
   const grid = [];
   for (let c = 0; c < cols; c++) {
     grid[c] = [];
@@ -1934,20 +1944,11 @@ window.printAllPlayers = function() {
     }
   }
 
-  // 셀 폰트: 행 수에 따라 자동 조절
   const cellFontPt = Math.min(13, Math.max(8, Math.floor(160 / rows)));
-  const titleFontPt = 20;
+  const numW = 5;
+  const gapW = 0.8;
+  const nameCheckW = (100 - cols * numW - (cols - 1) * gapW) / (cols * 2);
 
-  // 열 너비 계산: 4열 × (번호 + 이름 + 참가) + 간격
-  // 번호 고정, 이름·참가 동일 너비로 나머지 분배
-  // table-layout:fixed + % 사용
-  // 전체 = 4 × (num% + name% + check%) + 3 × gap%
-  // gap = 0.8%, num = 4%, name = check = 자동
-  const numW = 5;      // % per col
-  const gapW = 0.8;    // % between col groups
-  const nameCheckW = (100 - cols * numW - (cols - 1) * gapW) / (cols * 2); // name == check
-
-  // HTML 생성: 번호 | 이름 | 참가란
   let colgroup = `<colgroup>`;
   for (let c = 0; c < cols; c++) {
     colgroup += `<col style="width:${numW}%"><col style="width:${nameCheckW.toFixed(2)}%"><col style="width:${nameCheckW.toFixed(2)}%">`;
@@ -1962,13 +1963,19 @@ window.printAllPlayers = function() {
   }
   tableInner += `</tr></thead><tbody>`;
 
+  // 조 구분 배경색 (열 교대)
+  const gnList = groupNames;
+  const gnColorMap = {};
+  const gnColors = ['#f8faff','#f0fdf4','#fff9f0','#fdf4ff','#f0f9ff','#fefce8','#fff1f2','#f0fdfa'];
+  gnList.forEach((gn, i) => { gnColorMap[gn] = gnColors[i % gnColors.length]; });
+
   for (let r = 0; r < rows; r++) {
     tableInner += `<tr>`;
     for (let c = 0; c < cols; c++) {
       const p = grid[c][r];
-      const num = c * rows + r + 1;
       if (p) {
-        tableInner += `<td class="td-num">${num}</td><td class="td-name">${p.display}</td><td class="td-check"></td>`;
+        const bg = gnColorMap[p.gn] || '#fff';
+        tableInner += `<td class="td-num" style="background:${bg}">${p.num}</td><td class="td-name" style="background:${bg}">${p.display}</td><td class="td-check" style="background:${bg}"></td>`;
       } else {
         tableInner += `<td class="td-num"></td><td class="td-name"></td><td class="td-check"></td>`;
       }
