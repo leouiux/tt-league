@@ -229,21 +229,21 @@ function processBulk() {
 
 // 소속별 배경색 — 뚜렷한 파스텔 단색 + 굵은 왼쪽 컬러 테두리로 깔끔하게 구분
 const AFFIL_STYLES = [
-  { bg: 'rgb(253,232,232)', border: 'rgb(255,53,53)',   bt:'3px', br:'1px', bb:'1px', bl:'4px' }, // 빨강
-  { bg: 'rgb(224,231,255)', border: 'rgb(12,0,154)',    bt:'1px', br:'3px', bb:'1px', bl:'4px' }, // 파랑
-  { bg: 'rgb(254,249,195)', border: 'rgb(255,173,0)',   bt:'1px', br:'1px', bb:'3px', bl:'4px' }, // 노랑
-  { bg: 'rgb(236,252,203)', border: 'rgb(135,229,0)',   bt:'4px', br:'1px', bb:'1px', bl:'3px' }, // 라임
-  { bg: 'rgb(253,244,255)', border: 'rgb(204,148,255)', bt:'1px', br:'4px', bb:'3px', bl:'1px' }, // 보라
-  { bg: '#fce7f3', border: '#db2777', bt:'3px', br:'1px', bb:'4px', bl:'1px' }, // 분홍
-  { bg: '#ffedd5', border: '#ea580c', bt:'1px', br:'4px', bb:'1px', bl:'3px' }, // 주황
-  { bg: '#cffafe', border: '#0891b2', bt:'4px', br:'3px', bb:'1px', bl:'1px' }, // 청록
-  { bg: '#d1fae5', border: '#059669', bt:'1px', br:'1px', bb:'4px', bl:'3px' }, // 초록
-  { bg: '#e0e7ff', border: '#4338ca', bt:'3px', br:'4px', bb:'1px', bl:'1px' }, // 인디고
-  { bg: '#fff1f2', border: '#e11d48', bt:'1px', br:'3px', bb:'4px', bl:'1px' }, // 로즈
-  { bg: '#f0fdf4', border: '#16a34a', bt:'4px', br:'1px', bb:'3px', bl:'1px' }, // 연초록
-  { bg: '#fff7ed', border: '#d97706', bt:'1px', br:'1px', bb:'3px', bl:'4px' }, // 앰버
-  { bg: '#f0f9ff', border: '#0284c7', bt:'3px', br:'1px', bb:'1px', bl:'4px' }, // 하늘
-  { bg: '#fdf4ff', border: '#9333ea', bt:'1px', br:'4px', bb:'1px', bl:'3px' }, // 자주
+  { bg: 'rgb(253,232,232)', border: 'rgb(255,53,53)',   side: 'left'   }, // 빨강  ← 좌
+  { bg: 'rgb(224,231,255)', border: 'rgb(12,0,154)',    side: 'top'    }, // 파랑  ↑ 상
+  { bg: 'rgb(254,249,195)', border: 'rgb(255,173,0)',   side: 'right'  }, // 노랑  → 우
+  { bg: 'rgb(236,252,203)', border: 'rgb(135,229,0)',   side: 'bottom' }, // 라임  ↓ 하
+  { bg: 'rgb(253,244,255)', border: 'rgb(204,148,255)', side: 'left'   }, // 보라  ← 좌
+  { bg: '#fce7f3', border: '#db2777', side: 'top'    }, // 분홍  ↑ 상
+  { bg: '#ffedd5', border: '#ea580c', side: 'right'  }, // 주황  → 우
+  { bg: '#cffafe', border: '#0891b2', side: 'bottom' }, // 청록  ↓ 하
+  { bg: '#d1fae5', border: '#059669', side: 'left'   }, // 초록  ← 좌
+  { bg: '#e0e7ff', border: '#4338ca', side: 'top'    }, // 인디고 ↑ 상
+  { bg: '#fff1f2', border: '#e11d48', side: 'right'  }, // 로즈  → 우
+  { bg: '#f0fdf4', border: '#16a34a', side: 'bottom' }, // 연초록 ↓ 하
+  { bg: '#fff7ed', border: '#d97706', side: 'left'   }, // 앰버  ← 좌
+  { bg: '#f0f9ff', border: '#0284c7', side: 'top'    }, // 하늘  ↑ 상
+  { bg: '#fdf4ff', border: '#9333ea', side: 'right'  }, // 자주  → 우
 ];
 
 function applyAffilColors() {
@@ -269,32 +269,31 @@ function applyAffilColors() {
 
   inputs.forEach(el => {
     const raw = el.value.trim();
-    el.style.background = '';
-    el.style.borderTop = '';
-    el.style.borderRight = '';
-    el.style.borderBottom = '';
-    el.style.borderLeft = '';
-    el.style.outline = '';
+    el.style.background    = '';
+    el.style.borderTop     = '';
+    el.style.borderRight   = '';
+    el.style.borderBottom  = '';
+    el.style.borderLeft    = '';
+    el.style.outline       = '';
 
     if (!raw) return;
 
     const key = raw.toLowerCase().replace(/\s+/g,'');
     if (dupKeys.has(key)) {
-      el.style.background = '#fee2e2';
-      el.style.borderTop    = '3px solid #ef4444';
-      el.style.borderRight  = '3px solid #ef4444';
-      el.style.borderBottom = '3px solid #ef4444';
-      el.style.borderLeft   = '4px solid #ef4444';
+      el.style.background  = '#fee2e2';
+      el.style.borderLeft  = '4px solid #ef4444';
     } else {
       const m = raw.match(/\(([^)]+)\)/);
       const affil = m ? m[1] : '';
       if (affil && affilStyleMap[affil]) {
         const s = affilStyleMap[affil];
-        el.style.background   = s.bg;
-        el.style.borderTop    = `${s.bt} solid ${s.border}`;
-        el.style.borderRight  = `${s.br} solid ${s.border}`;
-        el.style.borderBottom = `${s.bb} solid ${s.border}`;
-        el.style.borderLeft   = `${s.bl} solid ${s.border}`;
+        el.style.background = s.bg;
+        const thick = '4px solid ' + s.border;
+        const thin  = '1px solid ' + s.border;
+        el.style.borderTop    = s.side === 'top'    ? thick : thin;
+        el.style.borderRight  = s.side === 'right'  ? thick : thin;
+        el.style.borderBottom = s.side === 'bottom' ? thick : thin;
+        el.style.borderLeft   = s.side === 'left'   ? thick : thin;
       }
     }
   });
@@ -441,6 +440,7 @@ function loadLeague(id) {
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+        <button onclick="window.open('prize.html','_blank')" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">🎁 전체경품추첨</button>
         <button onclick="openTiebreaker()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">⚖️ 동률간 승자 계산하기</button>
         <button onclick="printAllPlayers()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">🗒️ 전체 명단 인쇄</button>
       </div>
@@ -1290,7 +1290,19 @@ window.printAllPlayers = function() {
   if (!total) { alert('선수 명단이 없습니다.'); return; }
 
   const cols = 4;
-  const rows = Math.ceil(total / cols);
+
+  // 각 열에 들어갈 항목을 만든다: 선수 항목 사이에 조 헤더 행을 삽입
+  // 먼저 조 단위로 분리된 배열 구성
+  // col별로 채울 아이템 배열: type='header'|'player'
+  // 전체 아이템 = 조별로 header + players 순서로 flat
+  const items = []; // {type:'header'|'player', gn, display, num}
+  groupedPlayers.forEach(({ gn, players }) => {
+    items.push({ type: 'header', gn });
+    players.forEach((p, i) => items.push({ type: 'player', gn, display: p.display, num: i + 1 }));
+  });
+
+  const totalItems = items.length;
+  const rows = Math.ceil(totalItems / cols);
 
   // 세로우선 배치
   const grid = [];
@@ -1298,7 +1310,7 @@ window.printAllPlayers = function() {
     grid[c] = [];
     for (let r = 0; r < rows; r++) {
       const idx = c * rows + r;
-      grid[c][r] = idx < total ? all[idx] : null;
+      grid[c][r] = idx < totalItems ? items[idx] : null;
     }
   }
 
@@ -1321,21 +1333,16 @@ window.printAllPlayers = function() {
   }
   tableInner += `</tr></thead><tbody>`;
 
-  // 조 구분 배경색 (열 교대)
-  const gnList = groupNames;
-  const gnColorMap = {};
-  const gnColors = ['#f8faff','#f0fdf4','#fff9f0','#fdf4ff','#f0f9ff','#fefce8','#fff1f2','#f0fdfa'];
-  gnList.forEach((gn, i) => { gnColorMap[gn] = gnColors[i % gnColors.length]; });
-
   for (let r = 0; r < rows; r++) {
     tableInner += `<tr>`;
     for (let c = 0; c < cols; c++) {
-      const p = grid[c][r];
-      if (p) {
-        const bg = gnColorMap[p.gn] || '#fff';
-        tableInner += `<td class="td-num" style="background:${bg}">${p.num}</td><td class="td-name" style="background:${bg}">${p.display}</td><td class="td-check" style="background:${bg}"></td>`;
-      } else {
+      const item = grid[c][r];
+      if (!item) {
         tableInner += `<td class="td-num"></td><td class="td-name"></td><td class="td-check"></td>`;
+      } else if (item.type === 'header') {
+        tableInner += `<th colspan="3" style="text-align:center;background:#e8eaf0;font-size:${cellFontPt}pt;font-weight:800;padding:1pt 0;">${item.gn}</th>`;
+      } else {
+        tableInner += `<td class="td-num">${item.num}</td><td class="td-name">${item.display}</td><td class="td-check"></td>`;
       }
       if (c < cols - 1) tableInner += `<td class="td-gap"></td>`;
     }
