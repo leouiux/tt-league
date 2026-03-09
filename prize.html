@@ -441,6 +441,12 @@ function onRowBtnClick(idx) {
     rows.push({ name, count });
     _prizeStore = rows.map(r => Object.assign({}, r));
     renderPrizeRows();
+    // 새로 추가된 빈 행(마지막)의 경품명 input에 자동 포커스
+    setTimeout(() => {
+      const allDivs2 = document.querySelectorAll('.prize-row');
+      const newDiv = allDivs2[allDivs2.length - 1];
+      if (newDiv) { const inp = newDiv.querySelector('input'); if (inp) inp.focus(); }
+    }, 30);
   } else {
     // − 버튼: 해당 행 삭제 (현재 입력값 먼저 동기화)
     savePrizeData();
@@ -775,6 +781,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBulk();
 
 /* ── 초기화 ── */
 renderPrizeRows();
+setTimeout(() => { const f = document.querySelector('.prize-row input'); if (f) f.focus(); }, 50);
 </script>
 </body>
 </html>
