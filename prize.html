@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>용문리그 경품 추첨</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f0f2f7;
+  --surface: #ffffff;
+  --surface2: #f7f8fc;
+  --border: #e4e8f0;
+  --primary: #5b6cf5;
+  --primary-dark: #4455e8;
+  --primary-light: #eef0fe;
+  --accent: #7c3aed;
+  --success: #10b981;
+  --success-light: #d1fae5;
+  --danger: #ef4444;
+  --danger-light: #fee2e2;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --text: #1a1f36;
+  --text2: #4f566b;
+  --text3: #8898aa;
+  --shadow-sm: 0 1px 4px rgba(0,0,0,0.06);
+  --shadow: 0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.12);
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans KR', 'DM Sans', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+.app-shell { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
+
+/* TOPBAR */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surface); border-radius: var(--radius);
+  padding: 14px 24px; margin-bottom: 20px;
+  box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
+  flex-wrap: wrap; gap: 12px;
+}
+.topbar-brand { display: flex; align-items: center; gap: 10px; }
+.topbar-logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; color: white; box-shadow: 0 4px 12px rgba(91,108,245,0.35);
+}
+.topbar-name { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+
+/* BUTTONS */
+button { cursor: pointer; font-family: inherit; transition: all 0.18s; border: none; font-weight: 600; white-space: nowrap; }
+button:active { transform: scale(0.97); }
+.btn { padding: 8px 16px; border-radius: var(--radius-sm); font-size: 0.88rem; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; box-shadow: 0 2px 8px rgba(91,108,245,0.3); }
+.btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(91,108,245,0.4); }
+.btn-ghost { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border); }
+.btn-ghost:hover { background: var(--border); color: var(--text); }
+.btn-success-s { background: var(--success); color: white; }
+.btn-success-s:hover { background: #059669; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #dc2626; }
+.btn-warn { background: var(--warning); color: white; }
+.btn-warn:hover { background: #d97706; }
+.btn-lg { padding: 13px 24px; font-size: 1rem; border-radius: var(--radius-sm); }
+.btn-full { width: 100%; justify-content: center; }
+.btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
+
+/* CARD */
+.card {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow-sm); border: 1.5px solid var(--border);
+  padding: 24px; margin-bottom: 20px; overflow: hidden;
+}
+
+/* HERO BANNER */
+.title-banner {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  border-radius: var(--radius); padding: 20px 28px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 16px;
+  box-shadow: 0 6px 24px rgba(91,108,245,0.28);
+}
+.title-banner-icon {
+  font-size: 2rem; width: 52px; height: 52px; border-radius: 14px;
+  background: rgba(255,255,255,0.18); display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0;
+}
+.title-banner-name { font-size: 2rem; font-weight: 900; color: white; letter-spacing: -0.3px; }
+.title-banner-meta { font-size: 0.82rem; color: rgba(255,255,255,0.75); margin-top: 3px; }
+
+/* SECTION LABEL */
+.section-label { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); margin-bottom: 10px; }
+
+/* PRIZE ROWS */
+.prize-rows { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+.prize-row {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 10px 14px;
+}
+.prize-row-num {
+  min-width: 24px; height: 24px; border-radius: 50%;
+  background: var(--primary-light); color: var(--primary);
+  font-size: 0.75rem; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+.prize-input {
+  flex: 1; padding: 7px 11px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 600;
+  background: white; color: var(--text); outline: none; font-family: inherit;
+  transition: border-color 0.18s; ime-mode: active;
+}
+.prize-input:focus { border-color: var(--primary); }
+.prize-input::placeholder { color: var(--text3); font-weight: 400; }
+.count-input {
+  width: 64px; padding: 7px 10px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 700;
+  background: white; color: var(--text); outline: none; font-family: inherit;
+  text-align: center; transition: border-color 0.18s;
+}
+.count-input:focus { border-color: var(--primary); }
+.row-label { font-size: 0.75rem; color: var(--text3); white-space: nowrap; }
+.btn-row-add { background: var(--primary); color: white; width: 30px; height: 30px; border-radius: 7px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; }
+.btn-row-add:hover { background: var(--primary-dark); }
+.btn-row-del { background: var(--danger-light); color: var(--danger); width: 30px; height: 30px; border-radius: 7px; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0; border: 1.5px solid #fca5a5; }
+.btn-row-del:hover { background: var(--danger); color: white; }
+
+/* FIELD */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 0.82rem; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* TABLE */
+.table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1.5px solid var(--border); max-width: 100%; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); table-layout: fixed; min-width: 0; }
+th, td { border: 1px solid var(--border); padding: 7px 6px; text-align: center; font-size: 0.85rem; }
+th { background: var(--surface2); font-weight: 700; color: var(--text2); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.3px; }
+.prize-cell-input {
+  width: 100%; min-width: 0; border: none; background: transparent; font-size: 0.82rem;
+  font-weight: 600; text-align: center; color: var(--primary); font-family: inherit;
+  outline: none; padding: 2px 2px;
+}
+.prize-cell-input:focus { background: var(--primary-light); border-radius: 4px; }
+.prize-cell-input.won { color: #059669; font-weight: 800; }
+
+/* MODAL */
+.modal-bg {
+  display: none; position: fixed; inset: 0;
+  background: rgba(15,20,40,0.55); backdrop-filter: blur(4px);
+  z-index: 999; justify-content: center; align-items: center; padding: 20px;
+}
+.modal-bg.active { display: flex; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  box-shadow: var(--shadow-lg); width: 100%; max-width: 420px;
+  max-height: 90vh; overflow-y: auto; padding: 24px;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.modal-title { font-size: 1.05rem; font-weight: 800; color: var(--text); }
+.modal-close {
+  background: var(--surface2); border: 1.5px solid var(--border); color: var(--text2);
+  width: 30px; height: 30px; border-radius: 8px; font-size: 0.9rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.modal-close:hover { background: var(--border); }
+.bulk-textarea {
+  width: 100%; height: 300px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px; font-size: 0.9rem; resize: none; font-family: inherit; margin: 12px 0;
+  outline: none; color: var(--text);
+}
+.bulk-textarea:focus { border-color: var(--primary); }
+
+/* RESULT SECTION */
+#resultSection { display: none; }
+#resultSection.visible { display: block; }
+
+/* DRAW ANIMATION */
+@keyframes popIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.prize-cell-input.animate { animation: popIn 0.35s ease forwards; }
+
+/* HIDDEN */
+.hidden { display: none !important; }
+.mt16 { margin-top: 16px; }
+.flex { display: flex; }
+.gap8 { gap: 8px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.flex-wrap { flex-wrap: wrap; }
+
+/* PRINT */
+@media print {
+  body { background: white; }
+  .no-print { display: none !important; }
+  .app-shell { padding: 0; }
+  .print-only { display: block !important; }
+  @page { size: A4 landscape; margin: 8mm 12mm 8mm 12mm; }
+}
+.print-only { display: none; }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .app-shell { padding: 12px 10px; }
+  .prize-row { flex-wrap: wrap; }
+  .title-banner-name { font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- TOPBAR -->
+  <div class="topbar no-print">
+    <div class="topbar-brand">
+      <div class="topbar-logo">🎁</div>
+      <span class="topbar-name">용문리그 경품 추첨</span>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost" onclick="window.close()">✕ 닫기</button>
+    </div>
+  </div>
+
+  <!-- TITLE BANNER -->
+  <div class="title-banner no-print">
+    <div class="title-banner-icon">🎁</div>
+    <div>
+      <div class="title-banner-name">용문리그 경품 추첨</div>
+      <div class="title-banner-meta">참가자와 참가자와 경품을 등록하고 랜덤 추첨하세요!!</div>
+    </div>
+  </div>
+
+  <!-- 경품 설정 -->
+  <div class="card no-print">
+    <div class="section-label">경품 등록</div>
+    <div class="prize-rows" id="prizeRows"></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-ghost" id="bulkInputBtn">📋 명단 한번에 입력</button>
+    </div>
+  </div>
+
+  <!-- 참가자 명단 + 경품 표 -->
+  <div id="playerSection" class="hidden">
+    <div class="card no-print">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <div class="section-label" style="margin:0;">참가자 명단</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary hidden" id="printBtnInline" onclick="printResult()">🖨️ 경품 추첨 결과 인쇄하기</button>
+          <button class="btn btn-warn" id="drawBtn">🎲 경품 랜덤 추첨</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="playerTable">
+          <thead id="playerTableHead"></thead>
+          <tbody id="playerTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <!-- 추첨 결과 인쇄 버튼 -->
+    <div id="printBtnWrap" class="hidden no-print" style="margin-bottom:20px;">
+      <button class="btn btn-primary btn-lg btn-full" onclick="printResult()">🖨️ 경품 추첨 결과 인쇄하기</button>
+    </div>
+  </div>
+
+  <!-- 인쇄 전용 섹션 -->
+  <div id="printSection" class="print-only">
+    <div id="printContent"></div>
+  </div>
+
+</div>
+
+<!-- BULK INPUT MODAL -->
+<div id="bulkModal" class="modal-bg">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">📋 참가자 명단 한번에 입력</div>
+      <button class="modal-close" id="bulkCancelBtn">✕</button>
+    </div>
+    <div style="font-size:0.8rem;color:var(--text2);line-height:1.9;">
+      한 행에 1명씩 입력 · <strong>이름&nbsp;&nbsp;소속&nbsp;&nbsp;등급</strong> 순서로 띄어쓰기로 구분<br>
+      예) <strong>홍길동 조아 2</strong> &nbsp;→&nbsp; 이름: 홍길동, 소속: 조아, 등급: 2<br>
+      <span style="color:var(--primary);">· 이름 내 숫자·특수문자는 자동으로 제거됩니다</span><br>
+      <span style="color:var(--primary);">· 가나다 순으로 자동 정렬됩니다</span><br>
+      <span style="color:var(--warning);font-weight:700;">· 밴드에서 한번에 복사한 텍스트 붙여넣기로 입력하세요!</span>
+    </div>
+    <textarea class="bulk-textarea" id="bulkTextarea" placeholder="홍길동 조아 2&#10;마동탁 나라 6&#10;이순신 다가 3&#10;..."></textarea>
+    <div class="flex gap8">
+      <button class="btn btn-primary btn-full" id="bulkConfirmBtn">✔ 입력</button>
+      <button class="btn btn-ghost" id="bulkCancelBtn2" style="flex:1;">취소</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── 데이터 ── */
+window.players = []; // [{name, grade, display}]
+let _prizeStore = []; // 경품 데이터 메모리 저장
+const COLS = 4;   // 표 열 수
+
+/* ── 경품 행 관리 ── */
+function renderPrizeRows() {
+  const container = document.getElementById('prizeRows');
+  const rows = getPrizeData();
+  container.innerHTML = '';
+  rows.forEach((row, i) => buildPrizeRow(container, i, row.name, row.count));
+  // 마지막에 빈 행 하나 추가
+  buildPrizeRow(container, rows.length, '', '');
+}
+
+// 포커스 시 한국어 IME 전환 헬퍼: HangulMode 키이벤트 dispatch
+function triggerKoreanIME(el) {
+  // 이미 한국어 입력 중이면 전환 불필요 — 판단 불가하므로 항상 dispatch
+  try {
+    // 한영키: key='HangulMode', keyCode=21 (Windows 한국어 키보드)
+    const evDown = new KeyboardEvent('keydown', {
+      key: 'HangulMode', code: 'HangulMode', keyCode: 21, which: 21,
+      bubbles: true, cancelable: true
+    });
+    const evUp = new KeyboardEvent('keyup', {
+      key: 'HangulMode', code: 'HangulMode', keyCode: 21, which: 21,
+      bubbles: true, cancelable: true
+    });
+    el.dispatchEvent(evDown);
+    el.dispatchEvent(evUp);
+  } catch(e) {}
+}
+
+function buildPrizeRow(container, idx, nameVal, countVal) {
+  const div = document.createElement('div');
+  div.className = 'prize-row';
+  div.dataset.idx = idx;
+
+  const numEl = document.createElement('div');
+  numEl.className = 'prize-row-num';
+  numEl.textContent = idx + 1;
+
+  // ── 경품명 입력 ──
+  const nameIn = document.createElement('input');
+  nameIn.className = 'prize-input';
+  nameIn.type = 'text';
+  nameIn.placeholder = '경품 이름';
+  nameIn.value = nameVal || '';
+  nameIn.setAttribute('lang', 'ko');
+  nameIn.setAttribute('autocomplete', 'off');
+  nameIn.setAttribute('autocorrect', 'off');
+  nameIn.setAttribute('autocapitalize', 'off');
+  nameIn.setAttribute('spellcheck', 'false');
+  nameIn.addEventListener('focus', function() { triggerKoreanIME(this); });
+  nameIn.addEventListener('input', onPrizeRowChange);
+
+  const countLabel = document.createElement('span');
+  countLabel.className = 'row-label';
+  countLabel.textContent = '개수';
+
+  // ── 개수 입력 ──
+  const countIn = document.createElement('input');
+  countIn.className = 'count-input';
+  countIn.type = 'text';
+  countIn.inputMode = 'numeric';
+  countIn.pattern = '[0-9]*';
+  countIn.value = countVal || '';
+  countIn.placeholder = '0';
+  countIn.setAttribute('lang', 'ko');
+  countIn.setAttribute('autocomplete', 'off');
+  countIn.addEventListener('focus', function() { triggerKoreanIME(this); });
+  // 숫자만 허용
+  countIn.addEventListener('keypress', function(e) {
+    if (!/[0-9]/.test(e.key) && !['Backspace','Delete','Tab','ArrowLeft','ArrowRight'].includes(e.key)) {
+      if (!e.ctrlKey && !e.metaKey) e.preventDefault();
+    }
+  });
+  countIn.addEventListener('input', function() {
+    this.value = this.value.replace(/[^0-9]/g, '');
+    onPrizeRowChange.call(this);
+  });
+
+  const btn = document.createElement('button');
+  updateRowBtn(btn, idx, nameVal, countVal);
+  btn.addEventListener('click', () => onRowBtnClick(idx));
+
+  div.append(numEl, nameIn, countLabel, countIn, btn);
+  container.appendChild(div);
+}
+
+function updateRowBtn(btn, idx, name, count) {
+  const rows = getPrizeData();
+  const isLast = (idx === rows.length); // last = empty row
+  if (isLast || (!name && !count)) {
+    btn.className = 'btn-row-add';
+    btn.textContent = '+';
+    btn.title = '경품 추가';
+  } else {
+    btn.className = 'btn-row-del';
+    btn.textContent = '−';
+    btn.title = '경품 삭제';
+  }
+}
+
+function onPrizeRowChange(e) {
+  // 버튼 표시만 갱신 — DOM 전체 재생성 하지 않음
+  const row = e.target.closest('.prize-row');
+  if (!row) return;
+  const inputs = row.querySelectorAll('input');
+  const name  = inputs[0].value.trim();
+  const count = inputs[1].value.trim();
+  const btn   = row.querySelector('button');
+  const idx   = parseInt(row.dataset.idx);
+  const savedRows = getPrizeData();
+  const isSaved   = idx < savedRows.length;
+  if (isSaved) {
+    if (name || count) {
+      btn.className = 'btn-row-del'; btn.textContent = '−'; btn.title = '경품 삭제';
+    } else {
+      btn.className = 'btn-row-add'; btn.textContent = '+'; btn.title = '경품 추가';
+    }
+  }
+  // 마지막 빈 행(미저장)은 + 유지
+}
+
+function onRowBtnClick(idx) {
+  const rows = getPrizeData();
+  if (idx >= rows.length) {
+    // + 버튼: 마지막 빈 행의 값을 읽어 내용이 있을 때만 저장 후 새 행 추가
+    const allDivs = document.querySelectorAll('.prize-row');
+    const lastDiv = allDivs[allDivs.length - 1];
+    if (!lastDiv) return;
+    const inputs = lastDiv.querySelectorAll('input');
+    const name  = inputs[0].value.trim();
+    const count = parseInt(inputs[1].value) || 0;
+    if (!name && !count) return; // 빈 행이면 무시
+    rows.push({ name, count });
+    _prizeStore = rows.map(r => Object.assign({}, r));
+    renderPrizeRows();
+  } else {
+    // − 버튼: 해당 행 삭제 (현재 입력값 먼저 동기화)
+    savePrizeData();
+    const updated = getPrizeData();
+    updated.splice(idx, 1);
+    _prizeStore = updated.map(r => Object.assign({}, r));
+    renderPrizeRows();
+  }
+}
+
+function getPrizeData() {
+  return _prizeStore.map(r => Object.assign({}, r));
+}
+
+function savePrizeData() {
+  const rows = [];
+  document.querySelectorAll('.prize-row').forEach(div => {
+    const inputs = div.querySelectorAll('input');
+    const name = inputs[0].value.trim();
+    const count = parseInt(inputs[1].value) || 0;
+    if (name || count) rows.push({ name, count });
+  });
+  _prizeStore = rows;
+}
+
+/* ── 참가자 파싱 (index6.html 한번에 등록과 동일 룰) ── */
+function parseBulk(text) {
+  if (!text.trim()) return [];
+
+  // ── index6.html processBulk 동일 정제 헬퍼 ──
+  function cleanName(raw) {
+    return raw
+      .replace(/^[\d\s]+/, '')
+      .replace(/[0-9]/g, '')
+      .replace(/[^\uAC00-\uD7A3\u3040-\u30FF\u4E00-\u9FFF\uF900-\uFAFFa-zA-Z\s]/g, '')
+      .trim();
+  }
+  function cleanGrade(raw) {
+    const digits = raw.replace(/[^\d]/g, '');
+    return digits ? parseInt(digits) : null;
+  }
+
+  // ── 행 순서 그대로 파싱 (정렬 없음 — 입력 순서 = 명단 순서) ──
+  const result = [];
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li].trim();
+    if (!line) continue;
+    const tokens = line.split(/\s+/);
+    let rawName = '', rawGrade = '';
+
+    if (tokens.length >= 3) {
+      const last = tokens[tokens.length - 1];
+      if (/\d/.test(last)) {
+        rawGrade = last;
+        rawName  = tokens.slice(0, tokens.length - 2).join(' ') || tokens[0];
+      } else {
+        rawName = tokens[0];
+      }
+    } else if (tokens.length === 2) {
+      const last = tokens[1];
+      if (/\d/.test(last)) {
+        rawGrade = last; rawName = tokens[0];
+      } else {
+        rawName = tokens[0];
+      }
+    } else {
+      rawName = tokens[0] || '';
+    }
+
+    const name = cleanName(rawName);
+    if (!name) continue;
+    const grade = rawGrade ? cleanGrade(rawGrade) : (cleanGrade(rawName) !== null ? cleanGrade(rawName) : null);
+    const display = grade !== null ? name + '(' + grade + ')' : name;
+    result.push({ name, grade, display });
+  }
+
+  // 가나다 정렬
+  result.sort((a, b) => {
+    if (a.name < b.name) return -1;
+    if (a.name > b.name) return 1;
+    return 0;
+  });
+  return result;
+}
+
+/* ── 표 렌더링 ── */
+function renderTable() {
+  if (!players.length) {
+    document.getElementById('playerSection').classList.add('hidden');
+    return;
+  }
+  document.getElementById('playerSection').classList.remove('hidden');
+
+  const total = players.length;
+  const rows = Math.ceil(total / COLS);
+
+  // 세로우선 grid
+  const grid = [];
+  for (let c = 0; c < COLS; c++) {
+    grid[c] = [];
+    for (let r = 0; r < rows; r++) {
+      const idx = c * rows + r;
+      grid[c][r] = idx < total ? players[idx] : null;
+    }
+  }
+
+  // THEAD
+  const thead = document.getElementById('playerTableHead');
+  // 열 너비: 번호4% 이름10% 경품10% × 4열 = 96%, 구분선 1px씩
+  const numPct = 4, namePct = 10, prizePct = 11;
+  let headHtml = '<tr>';
+  for (let c = 0; c < COLS; c++) {
+    headHtml += `<th style="width:${numPct}%">번호</th><th style="width:${namePct}%">이름</th><th style="width:${prizePct}%">경품</th>`;
+    if (c < COLS - 1) headHtml += `<th style="width:1px;padding:0;background:#c7ccd6;border:none;"></th>`;
+  }
+  headHtml += '</tr>';
+  thead.innerHTML = headHtml;
+
+  // TBODY
+  const tbody = document.getElementById('playerTableBody');
+  let bodyHtml = '';
+  for (let r = 0; r < rows; r++) {
+    bodyHtml += '<tr>';
+    for (let c = 0; c < COLS; c++) {
+      const p = grid[c][r];
+      const num = c * rows + r + 1;
+      if (p) {
+        bodyHtml += `<td style="font-weight:700;color:var(--text3);font-size:0.78rem;">${num}</td>`;
+        bodyHtml += `<td style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.display}</td>`;
+        bodyHtml += `<td><input class="prize-cell-input" data-player="${c * rows + r}" placeholder="" autocomplete="off"></td>`;
+      } else {
+        bodyHtml += `<td></td><td></td><td></td>`;
+      }
+      if (c < COLS - 1) bodyHtml += `<td style="width:1px;padding:0;background:#c7ccd6;border:none;"></td>`;
+    }
+    bodyHtml += '</tr>';
+  }
+  tbody.innerHTML = bodyHtml;
+  document.getElementById('printBtnWrap').classList.add('hidden');
+  const _pbi = document.getElementById('printBtnInline'); if (_pbi) _pbi.classList.add('hidden');
+}
+
+/* ── 경품 랜덤 추첨 ── */
+function drawPrizes() {
+  if (!players.length) { alert('참가자 명단을 먼저 입력해주세요.'); return; }
+  savePrizeData();
+  const prizeRows = getPrizeData().filter(r => r.name && r.count > 0);
+  if (!prizeRows.length) { alert('경품을 먼저 등록해주세요.'); return; }
+
+  // 경품 목록 생성 (이름 × 개수)
+  let prizes = [];
+  prizeRows.forEach(r => {
+    for (let i = 0; i < r.count; i++) prizes.push(r.name);
+  });
+
+  // 참가자보다 경품이 많으면 참가자 수만큼만
+  if (prizes.length > players.length) prizes = prizes.slice(0, players.length);
+
+  // 랜덤 셔플 (Fisher-Yates)
+  for (let i = prizes.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [prizes[i], prizes[j]] = [prizes[j], prizes[i]];
+  }
+
+  // 참가자 인덱스 배열을 셔플해서 경품 배정
+  const playerIdxArr = Array.from({ length: players.length }, (_, i) => i);
+  for (let i = playerIdxArr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [playerIdxArr[i], playerIdxArr[j]] = [playerIdxArr[j], playerIdxArr[i]];
+  }
+
+  // 경품별 색상 매핑
+  const PRIZE_COLORS = [
+    '#7c3aed','#0891b2','#059669','#d97706','#e11d48',
+    '#2563eb','#ea580c','#065f46','#9333ea','#b45309',
+  ];
+  const prizeColorMap = {};
+  prizeRows.forEach((r, i) => { prizeColorMap[r.name] = PRIZE_COLORS[i % PRIZE_COLORS.length]; });
+
+  // 초기화 후 입력
+  const inputs = document.querySelectorAll('.prize-cell-input');
+  inputs.forEach(inp => {
+    inp.value = ''; inp.style.color = ''; inp.style.fontWeight = '';
+    inp.classList.remove('won', 'animate');
+  });
+
+  prizes.forEach((prize, i) => {
+    const playerIdx = playerIdxArr[i];
+    const inp = document.querySelector(`.prize-cell-input[data-player="${playerIdx}"]`);
+    if (inp) {
+      inp.value = prize;
+      inp.style.color = prizeColorMap[prize] || '#059669';
+      inp.style.fontWeight = '800';
+      inp.classList.add('won');
+      setTimeout(() => {
+        inp.classList.add('animate');
+        setTimeout(() => inp.classList.remove('animate'), 400);
+      }, i * 40);
+    }
+  });
+
+  document.getElementById('printBtnWrap').classList.remove('hidden');
+  document.getElementById('printBtnInline').classList.remove('hidden');
+}
+
+/* ── 인쇄 ── */
+function printResult() {
+  const total = players.length;
+  if (!total) return;
+  const rows = Math.ceil(total / COLS);
+
+  // 그리드 구성
+  const grid = [];
+  for (let c = 0; c < COLS; c++) {
+    grid[c] = [];
+    for (let r = 0; r < rows; r++) {
+      const idx = c * rows + r;
+      grid[c][r] = idx < total ? { player: players[idx], idx: c * rows + r } : null;
+    }
+  }
+
+  // 경품 값 수집
+  const prizeValues = {};
+  document.querySelectorAll('.prize-cell-input').forEach(inp => {
+    prizeValues[inp.dataset.player] = inp.value;
+  });
+
+  const colW = (100 / COLS).toFixed(1);
+  // 경품별 색상 (drawPrizes와 동일 팔레트)
+  const PRIZE_COLORS_P = [
+    '#7c3aed','#0891b2','#059669','#d97706','#e11d48',
+    '#2563eb','#ea580c','#065f46','#9333ea','#b45309',
+  ];
+  const savedPrizeRows = getPrizeData().filter(r => r.name && r.count > 0);
+  const prizeColorMapP = {};
+  savedPrizeRows.forEach((r, i) => { prizeColorMapP[r.name] = PRIZE_COLORS_P[i % PRIZE_COLORS_P.length]; });
+
+  let rows_html = '';
+  for (let r = 0; r < rows; r++) {
+    rows_html += '<tr>';
+    for (let c = 0; c < COLS; c++) {
+      const cell = grid[c][r];
+      const num = c * rows + r + 1;
+      if (cell) {
+        const prize = prizeValues[cell.idx] || '';
+        const prizeStyle = prize ? 'font-weight:900;' : '';
+        rows_html += `<td style="text-align:center;font-size:9pt;color:#888;">${num}</td>`;
+        rows_html += `<td style="font-weight:600;font-size:9pt;text-align:center;">${cell.player.display}</td>`;
+        rows_html += `<td style="${prizeStyle}font-size:9pt;text-align:center;">${prize || ''}</td>`;
+      } else {
+        rows_html += '<td></td><td></td><td></td>';
+      }
+      if (c < COLS - 1) rows_html += `<td style="background:#e4e8f0;width:2px;padding:0;border:none;"></td>`;
+    }
+    rows_html += '</tr>';
+  }
+
+  let thead_html = '<tr>';
+  for (let c = 0; c < COLS; c++) {
+    thead_html += `<th style="width:4%;text-align:center;">번호</th><th style="width:${(96/COLS/2).toFixed(1)}%;text-align:center;">이름</th><th style="width:${(96/COLS/2).toFixed(1)}%;text-align:center;">경품</th>`;
+    if (c < COLS - 1) thead_html += `<th style="width:2px;padding:0;border:none;background:#e4e8f0;"></th>`;
+  }
+  thead_html += '</tr>';
+
+  const winnerSummary = Object.values(prizeValues).filter(v => v).length;
+  const totalPrizes = getPrizeData().reduce((s, r) => s + (r.count || 0), 0);
+
+  // td 높이 계산: A4 landscape 가용 높이 ≈ 537pt, 여백 제외 tbody ≈ 457pt
+  const tdHPt = Math.max(10, Math.floor(457 / rows));
+  const prizeDesc = getPrizeData().filter(r=>r.name&&r.count>0).map(r=>r.name+' '+r.count+'개').join(' / ');
+  const subtitleText = '참가자 ' + total + '명 · ' + prizeDesc + ' / 총 ' + totalPrizes + '개';
+
+  const printHtml = [
+    '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">',
+    '<title>용문리그 경품 추첨 결과</title>',
+    '<style>',
+    '@page { size: A4 landscape; margin: 10mm 12mm 10mm 12mm; }',
+    '* { box-sizing: border-box; margin: 0; padding: 0; }',
+    'html, body { font-family: Malgun Gothic, sans-serif; background: #fff; }',
+    'h1 { text-align: center; font-size: 18pt; font-weight: 900; margin-bottom: 4pt; }',
+    '.subtitle { text-align: center; font-size: 8pt; color: #666; margin-bottom: 8pt; }',
+    'table { width: 100%; border-collapse: collapse; table-layout: fixed; }',
+    'th { background: #ddd; border: 1px solid #000; font-size: 8pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; height:16pt; }',
+    'td { border: 1px solid #ccc; font-size: 9pt; vertical-align: middle; text-align: center; padding: 0 2pt; height:' + tdHPt + 'pt; }',
+    'tr:nth-child(even) td { background: #f0f0f0; }',
+    '.footer-note { text-align:center; font-size:11pt; color:#000; font-weight:normal; margin-top:8pt; }',
+    '.pbtn { display:block; margin:10px auto; padding:8px 28px; font-size:11pt; background:#5b6cf5; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }',
+    '.xclosebtn { position:fixed; top:10px; right:14px; background:#ef4444; color:white; border:none; border-radius:6px; width:30px; height:30px; font-size:15px; cursor:pointer; font-weight:900; z-index:999; }',
+    '@media print { .pbtn { display:none; } .xclosebtn { display:none; } * { color: #000 !important; background: transparent !important; } th { background: #ddd !important; } }',
+    '</style></head><body>',
+    '<button class="xclosebtn" onclick="window.close()">&#x2715;</button>',
+    '<h1>&#127873; 용문리그 경품 추첨 결과</h1>',
+    '<p class="subtitle">' + subtitleText + '</p>',
+    '<table><thead>' + thead_html + '</thead><tbody>' + rows_html + '</tbody></table>',
+    '<p class="footer-note">경품 추첨은 컴퓨터에서 자동으로 랜덤하게 추첨됩니다.</p>',
+    '<button class="pbtn" onclick="window.print()">&#128424;&#65039; 인쇄</button>',
+    '</body></html>'
+  ].join('');
+
+  const w = window.open('', '_blank');
+  w.document.write(printHtml);
+  w.document.close();
+}
+
+/* ── 모달 ── */
+function openBulk() {
+  document.getElementById('bulkModal').classList.add('active');
+  setTimeout(() => document.getElementById('bulkTextarea').focus(), 80);
+}
+function closeBulk() {
+  document.getElementById('bulkModal').classList.remove('active');
+  document.getElementById('bulkTextarea').value = '';
+}
+function confirmBulk() {
+  const text = document.getElementById('bulkTextarea').value;
+  const parsed = parseBulk(text);
+  if (!parsed.length) { alert('입력된 명단이 없습니다.'); return; }
+  window.players = parsed;
+  closeBulk();
+  renderTable();
+}
+
+/* ── 이벤트 ── */
+document.getElementById('bulkInputBtn').addEventListener('click', openBulk);
+document.getElementById('bulkCancelBtn').addEventListener('click', closeBulk);
+document.getElementById('bulkCancelBtn2').addEventListener('click', closeBulk);
+document.getElementById('bulkConfirmBtn').addEventListener('click', confirmBulk);
+document.getElementById('drawBtn').addEventListener('click', drawPrizes);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBulk(); });
+
+/* ── 초기화 ── */
+renderPrizeRows();
+</script>
+</body>
+</html>
