@@ -38,6 +38,7 @@ body {
   color: var(--text);
   min-height: 100vh;
   line-height: 1.6;
+  overscroll-behavior: none;
 }
 .app-shell { max-width: 1400px; margin: 0 auto; padding: 24px 20px; }
 
@@ -211,9 +212,29 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
 
 /* RESPONSIVE */
 @media (max-width: 600px) {
-  .app-shell { padding: 12px 10px; }
-  .prize-row { flex-wrap: wrap; }
-  .title-banner-name { font-size: 1.4rem; }
+  .app-shell { padding: 10px 8px; }
+  .topbar { padding: 10px 14px; }
+  .topbar-name { font-size: 0.95rem; }
+  .title-banner { padding: 14px 16px; gap: 10px; }
+  .title-banner-name { font-size: 1.3rem; }
+  .title-banner-meta { font-size: 0.75rem; }
+  .card { padding: 14px 12px; }
+  /* 경품 등록 행: 모바일에서 줄바꿈 */
+  .prize-row { flex-wrap: wrap; gap: 6px; padding: 8px 10px; }
+  .prize-input { min-width: 0; font-size: 0.85rem; }
+  .count-input { width: 52px; font-size: 0.85rem; }
+  /* 버튼 */
+  .btn { padding: 7px 10px; font-size: 0.82rem; }
+  .btn-lg { padding: 11px 14px; font-size: 0.9rem; }
+  /* 참가자 명단 헤더 */
+  .section-label { font-size: 0.72rem; }
+  /* 표: 가로 스크롤 허용 */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 320px; }
+  th, td { font-size: 0.75rem; padding: 5px 3px; }
+  /* 모달 */
+  .modal { padding: 16px 14px; max-width: 98vw; }
+  .bulk-textarea { font-size: 0.85rem; }
 }
 </style>
 </head>
