@@ -230,7 +230,7 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
   .section-label { font-size: 0.72rem; }
   /* 표: 가로 스크롤 허용 */
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { min-width: 320px; }
+  table { min-width: 0; }
   th, td { font-size: 0.75rem; padding: 5px 3px; }
   /* 모달 */
   .modal { padding: 16px 14px; max-width: 98vw; }
@@ -326,7 +326,7 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
 /* ── 데이터 ── */
 window.players = []; // [{name, grade, display}]
 let _prizeStore = []; // 경품 데이터 메모리 저장
-const COLS = 4;   // 표 열 수
+const COLS = window.innerWidth <= 600 ? 2 : 4;   // 표 열 수 (모바일 2열)
 
 /* ── 경품 행 관리 ── */
 function renderPrizeRows() {

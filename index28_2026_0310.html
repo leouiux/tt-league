@@ -388,19 +388,18 @@ th.sortable:hover { background: var(--primary-light); }
   .title-banner > div:last-child button { flex: 1; font-size: 0.78rem; padding: 8px 10px; text-align: center; }
   /* 타이브레이커 팝업 모바일 최적화 */
   #tiebreakerModal {
-    justify-content: flex-start;
+    justify-content: center;
     align-items: flex-start;
-    padding: 12px 0 12px 0;
+    padding: 12px 10px;
   }
   #tiebreakerModal .modal {
-    max-width: 100vw;
-    width: 100vw;
-    max-height: 100vh;
-    height: 100vh;
+    max-width: calc(100vw - 20px);
+    width: 100%;
+    max-height: 92vh;
     overflow-y: auto;
     overflow-x: hidden;
     padding: 14px 12px;
-    border-radius: 0;
+    border-radius: 10px;
     margin: 0;
   }
   #tiebreakerModal .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -550,7 +549,7 @@ th.sortable:hover { background: var(--primary-light); }
     </div>
     <div class="table-wrap">
       <table class="hist-table">
-        <thead><tr><th>날짜</th><th>시간</th><th>대회명</th><th>관리</th></tr></thead>
+        <thead><tr><th style="text-align:left;">대회명</th><th style="white-space:nowrap;">관리</th></tr></thead>
         <tbody id="histTableBody"></tbody>
       </table>
     </div>
@@ -1094,7 +1093,7 @@ function loadLeague(id) {
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
-        <button onclick="openBandList()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">📋 밴드 최종공개명단</button>
+        <button onclick="openBandList()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">📋 밴드에 올릴 최종명단 캡쳐하기</button>
         <button onclick="window.open('prize.html','_blank')" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">🎁 전체경품추첨</button>
         <button onclick="openTiebreaker()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">⚖️ 동률간 승자 계산하기</button>
         <button onclick="printAllPlayers()" style="background:rgba(255,255,255,0.2);color:white;border:1.5px solid rgba(255,255,255,0.5);padding:9px 16px;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;backdrop-filter:blur(4px);transition:background 0.18s;" onmouseover="this.style.background='rgba(255,255,255,0.32)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">🗒️ 전체 명단 인쇄</button>
@@ -2092,6 +2091,9 @@ window.openBandList = function() {
   });
 
   const total = groupedPlayers.reduce((s, g) => s + g.players.length, 0);
+  const _bNow = new Date();
+  const _bYm = _bNow.getFullYear() + '.' + String(_bNow.getMonth()+1).padStart(2,'0');
+  const _bFname = (league.title||'용문리그').replace(/\s/g,'_') + '_최종명단_(' + _bYm + ').png';
   if (!total) { alert('선수 명단이 없습니다.'); return; }
 
   const cols = 4;
@@ -2168,16 +2170,16 @@ window.openBandList = function() {
   const html = [
     '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">',
     '<meta name="viewport" content="width=device-width,initial-scale=1.0">',
-    '<title>' + (league.title||'용문리그') + ' 최종공개명단</title>',
+    '<title>' + (league.title||'용문리그') + ' 최종명단</title>',
     '<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"><\/script>',
     '<style>',
     '* { box-sizing: border-box; margin: 0; padding: 0; }',
     'html, body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; background: #fff; width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; }',
-    'h1 { text-align: center; font-size: 20pt; font-weight: 900; padding: 12px 0 20px; letter-spacing: -0.3px; line-height: 1.1; color: #1a1f36; flex-shrink: 0; }',
+    'h1 { text-align: center; font-size: clamp(13px, 3.5vw, 20pt); font-weight: 900; padding: 10px 0 16px; letter-spacing: -0.3px; line-height: 1.1; color: #1a1f36; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
     '#capture { flex: 1; padding: 0 10px; display: flex; flex-direction: column; overflow: hidden; }',
     'table { width: 100%; border-collapse: collapse; table-layout: fixed; flex: 1; }',
-    'th.th-hdr { background: #1a1f36; color: #fff; border: 1px solid #1a1f36; font-size: 18pt; font-weight: 900; text-align: center; vertical-align: middle; letter-spacing: -0.3px; height: 52px; }',
-    'td.td-name { border: 1px solid #c8cdd8; font-size: 16pt; font-weight: 700; text-align: center; vertical-align: middle; color: #1a1f36; padding: 0 3px; }',
+    'th.th-hdr { background: #1a1f36; color: #fff; border: 1px solid #1a1f36; font-size: clamp(11px, 3vw, 18pt); font-weight: 900; text-align: center; vertical-align: middle; letter-spacing: -0.3px; height: 52px; white-space: nowrap; }',
+    'td.td-name { border: 1px solid #c8cdd8; font-size: clamp(10px, 2.8vw, 16pt); font-weight: 700; text-align: center; vertical-align: middle; color: #1a1f36; padding: 0 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }',
     'td.td-gap { border: none; background: transparent; padding: 0; }',
     'tr:nth-child(even) td.td-name { background: #f5f7fb; }',
     '.cap-bar { flex-shrink: 0; padding: 10px 0 12px; display: flex; justify-content: center; }',
@@ -2185,7 +2187,7 @@ window.openBandList = function() {
     '.cap-btn:hover { background: #2d3561; }',
     '</style>',
     '</head><body>',
-    '<div id="capture"><h1>' + (function(){ var d=new Date(); return d.getFullYear()+'.'+(String(d.getMonth()+1).padStart(2,'0')); })() + ' ' + (league.title||'용문리그') + ' 최종공개명단</h1><table>' + tableInner + '</table></div>',
+    '<div id="capture"><h1>' + (function(){ var d=new Date(); return d.getFullYear()+'.'+(String(d.getMonth()+1).padStart(2,'0')); })() + ' ' + (league.title||'용문리그') + ' 최종명단</h1><table>' + tableInner + '</table></div>',
     '<div class="cap-bar">',
     '  <button class="cap-btn" onclick="doCapture()">',
     '    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="12" cy="12" r="4"/><path d="M3 9h18"/></svg>',
@@ -2200,7 +2202,7 @@ window.openBandList = function() {
     '  html2canvas(target, { backgroundColor: "#ffffff", scale: window.devicePixelRatio || 2, useCORS: true, logging: false })',
     '    .then(function(canvas) {',
     '      var a = document.createElement("a");',
-    '      a.download = "' + (league.title||'용문리그').replace(/\s/g,'_') + '_최종명단.png";',
+    '      a.download = "' + _bFname + '";',
     '      a.href = canvas.toDataURL("image/png");',
     '      a.click();',
     '      btn.textContent = "✓ 캡쳐 완료!";',
@@ -2355,14 +2357,12 @@ function updateSelector() {
 function renderHistory() {
   const tbody = document.getElementById('histTableBody');
   const ids = Object.keys(masterData).sort((a, b) => (b > a ? 1 : -1));
-  if (!ids.length) { tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:var(--text3);">저장된 대회가 없습니다.</td></tr>'; return; }
+  if (!ids.length) { tbody.innerHTML = '<tr><td colspan="2" style="text-align:center;padding:24px;color:var(--text3);">저장된 대회가 없습니다.</td></tr>'; return; }
   tbody.innerHTML = ids.map(id => {
     const d = masterData[id];
-    const savedAt = d.savedAt || (d.date || '-');
     return `<tr>
-      <td style="color:var(--text3);white-space:nowrap;font-size:0.82rem;">${savedAt}</td>
-      <td style="font-weight:700;text-align:left;">${d.title}</td>
-      <td style="white-space:nowrap;">
+      <td style="font-weight:700;text-align:left;word-break:break-all;word-wrap:break-word;">${d.title}<br><span style="font-size:0.75rem;color:var(--text3);font-weight:400;">${d.savedAt||d.date||''}</span></td>
+      <td style="white-space:nowrap;vertical-align:middle;">
         <button class="btn btn-success-s btn-xs" onclick="handleEdit('${id}')">불러오기</button>
         <button class="btn btn-danger btn-xs" onclick="handleDelete('${id}')" style="margin-left:4px;">삭제</button>
       </td>
@@ -2378,6 +2378,15 @@ window.handleDelete = id => {
   renderHistory(); updateSelector();
   if (curId === id) location.reload();
 };
+
+
+/* ───────────────────────────── auto-save on unload ─────────────────────────────── */
+function autoSaveOnUnload() {
+  if (!curId || !masterData[curId]) return;
+  try { localStorage.setItem('league_db', JSON.stringify(masterData)); } catch(e) {}
+}
+window.addEventListener('beforeunload', autoSaveOnUnload);
+window.addEventListener('pagehide', autoSaveOnUnload);
 
 /* ───────────────────────────── tiebreaker ─────────────────────────────── */
 let tbData = { players: [], results: {}, targetWins: 2 };
