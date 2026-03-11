@@ -381,23 +381,25 @@ th.sortable:hover { background: var(--primary-light); }
   #tiebreakerModal {
     justify-content: center;
     align-items: flex-start;
-    padding: 12px 10px;
+    padding: 10px 8px;
+    overflow-x: hidden;
   }
   #tiebreakerModal .modal {
-    max-width: calc(100vw - 20px);
+    max-width: calc(100vw - 16px);
     width: 100%;
-    max-height: 92vh;
+    max-height: 94vh;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 14px 12px;
+    padding: 12px 10px;
     border-radius: 10px;
     margin: 0;
   }
-  #tiebreakerModal .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  #tiebreakerModal table { min-width: 0; font-size: 0.72rem; }
-  #tiebreakerModal th, #tiebreakerModal td { padding: 4px 3px; }
-  #tiebreakerModal input[type="text"] { width: 68px !important; font-size: 0.72rem !important; padding: 3px 4px !important; }
-  #tiebreakerModal select.matrix-select { min-width: 44px !important; font-size: 0.72rem; }
+  #tiebreakerModal .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; max-width: 100%; }
+  #tiebreakerModal table { min-width: 0; font-size: 0.68rem; width: 100%; }
+  #tiebreakerModal th, #tiebreakerModal td { padding: 3px 2px; white-space: nowrap; }
+  #tiebreakerModal input[type="text"] { width: 52px !important; font-size: 0.68rem !important; padding: 2px 3px !important; }
+  #tiebreakerModal select.matrix-select { min-width: 36px !important; font-size: 0.68rem; width: 100%; }
+  #tiebreakerModal #tbStep2 .table-wrap { overflow-x: scroll; }
 }
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
