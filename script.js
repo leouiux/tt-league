@@ -1771,6 +1771,11 @@ let tbData = { players: [], results: {}, targetWins: 2 };
 function openTiebreaker() {
   resetTiebreaker();
   document.getElementById('tiebreakerModal').classList.add('active');
+  // 모바일: 버튼 위치로 스크롤
+  if (window.innerWidth <= 600) {
+    const btn = document.querySelector('button[onclick="openTiebreaker()"]');
+    if (btn) setTimeout(() => btn.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
 }
 function closeTiebreaker() {
   document.getElementById('tiebreakerModal').classList.remove('active');

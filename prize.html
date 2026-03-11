@@ -210,6 +210,10 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
 }
 .print-only { display: none; }
 
+/* 인쇄버튼 기본 (데스크탑) */
+.print-btn-wrap { display: flex; flex-direction: column; align-items: stretch; }
+.print-main-btn { width: 100%; justify-content: center; text-align: center; }
+.print-close-btn { display: none; }
 /* RESPONSIVE */
 @media (max-width: 600px) {
   .app-shell { padding: 10px 8px; }
@@ -235,6 +239,10 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
   /* 모달 */
   .modal { padding: 16px 14px; max-width: 98vw; }
   .bulk-textarea { font-size: 0.85rem; }
+  /* 인쇄버튼 모바일: flex row + 닫기버튼 표시 */
+  .print-btn-wrap { display: flex !important; flex-direction: row; gap: 8px; align-items: center; }
+  .print-main-btn { flex: 1; font-size: 0.85rem !important; padding: 10px 12px !important; justify-content: center; }
+  .print-close-btn { display: inline-flex !important; flex-shrink: 0; padding: 10px 16px !important; font-size: 0.85rem !important; }
 }
 </style>
 </head>
@@ -288,9 +296,9 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
       </div>
     </div>
     <!-- 추첨 결과 인쇄 버튼 -->
-    <div id="printBtnWrap" class="hidden no-print" style="margin-bottom:20px;display:flex;gap:8px;align-items:center;">
-      <button class="btn btn-primary btn-lg" style="flex:1;" onclick="printResult()">🖨️ 경품 추첨 결과 인쇄하기</button>
-      <button class="btn btn-danger" style="flex-shrink:0;padding:11px 18px;font-size:0.92rem;" onclick="window.close()">✕ 닫기</button>
+    <div id="printBtnWrap" class="hidden no-print print-btn-wrap" style="margin-bottom:20px;">
+      <button class="btn btn-primary btn-lg print-main-btn" onclick="printResult()">🖨️ 경품 추첨 결과 인쇄하기</button>
+      <button class="btn btn-danger print-close-btn" onclick="window.close()">✕ 닫기</button>
     </div>
   </div>
 
@@ -579,15 +587,18 @@ function renderTable() {
 
   // THEAD
   const thead = document.getElementById('playerTableHead');
-  // 열 너비: COLS에 따라 자동 계산
-  const gapPx = COLS - 1; // 구분선 1px × (COLS-1)
-  const totalNonGap = 100; // %
-  // 번호:이름:경품 = 1:2:3 비율
-  const unitW = (totalNonGap - 0) / (COLS * 6); // 6 units per col group
-  const numPct = unitW * 1, namePct = unitW * 2, prizePct = unitW * 3;
+  const isMobile = window.innerWidth <= 600;
+  // 모바일: 번호 없이 이름+경품 / 데스크탑: 번호+이름+경품
+  // 열 너비: 이름:경품 = 2:3 (모바일) 또는 번호:이름:경품 = 1:2:3 (데스크탑)
+  const unitW = isMobile
+    ? 100 / (COLS * 5)          // 모바일: 5 units per col (이름2 + 경품3)
+    : 100 / (COLS * 6);         // 데스크탑: 6 units per col (번호1 + 이름2 + 경품3)
+  const namePct = unitW * 2, prizePct = unitW * 3;
+  const numPct  = unitW * 1;
   let headHtml = '<tr>';
   for (let c = 0; c < COLS; c++) {
-    headHtml += `<th style="width:${numPct.toFixed(1)}%">번호</th><th style="width:${namePct.toFixed(1)}%">이름</th><th style="width:${prizePct.toFixed(1)}%">경품</th>`;
+    if (!isMobile) headHtml += `<th style="width:${numPct.toFixed(1)}%">번호</th>`;
+    headHtml += `<th style="width:${namePct.toFixed(1)}%">이름</th><th style="width:${prizePct.toFixed(1)}%">경품</th>`;
     if (c < COLS - 1) headHtml += `<th style="width:1px;padding:0;background:#c7ccd6;border:none;"></th>`;
   }
   headHtml += '</tr>';
@@ -602,11 +613,12 @@ function renderTable() {
       const p = grid[c][r];
       const num = c * rows + r + 1;
       if (p) {
-        bodyHtml += `<td style="font-weight:700;color:var(--text3);font-size:0.78rem;">${num}</td>`;
+        if (!isMobile) bodyHtml += `<td style="font-weight:700;color:var(--text3);font-size:0.78rem;">${num}</td>`;
         bodyHtml += `<td style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.display}</td>`;
         bodyHtml += `<td><input class="prize-cell-input" data-player="${c * rows + r}" placeholder="" autocomplete="off"></td>`;
       } else {
-        bodyHtml += `<td></td><td></td><td></td>`;
+        if (!isMobile) bodyHtml += `<td></td>`;
+        bodyHtml += `<td></td><td></td>`;
       }
       if (c < COLS - 1) bodyHtml += `<td style="width:1px;padding:0;background:#c7ccd6;border:none;"></td>`;
     }
