@@ -379,7 +379,7 @@ th.sortable:hover { background: var(--primary-light); }
   .title-banner > div:last-child button { flex: 1; font-size: 0.78rem; padding: 8px 10px; text-align: center; }
   /* 타이브레이커 팝업 모바일 최적화 */
   #tiebreakerModal {
-    justify-content: center;
+    justify-content: start;
     align-items: flex-start;
     padding: 10px 8px;
     overflow-x: hidden;
