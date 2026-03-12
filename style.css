@@ -380,7 +380,6 @@ th.sortable:hover { background: var(--primary-light); }
   /* 타이브레이커 팝업 모바일 최적화 */
   #tiebreakerModal {
     justify-content: start;
-    align-items: flex-start;
     padding: 10px 8px;
     overflow-x: hidden;
   }
