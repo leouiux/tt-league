@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>용문리그·토너먼트 사용 가이드</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=DM+Sans:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+			rel="stylesheet"
+		/>
+		<style>
+			:root { --primary: #5b6cf5; --primary-dark: #4455e8; --primary-light: #eef0fe; --accent: #ef4444; --accent-light: #fee2e2; --gold: #f59e0b; --gold-light: #fef3c7; --green: #10b981; --green-light: #d1fae5; --navy: #1a1f36; --navy2:#252b48; --text: #1a1f36; --text2:#4f566b; --text3:#8898aa; --border: #e4e8f0; --bg: #f4f6fc; --surface: #ffffff; --shadow: 0 4px 20px rgba(91, 108, 245, 0.1); --shadow-lg: 0 12px 48px rgba(26, 31, 54, 0.14); --radius: 16px; --radius-sm: 10px; --sidebar-w: 248px; }
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+            body { font-family: "Noto Sans KR", sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; min-height: 100vh; }
+            .topbar { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(16px); border-bottom: 1.5px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 28px; height: 60px; }
+            .topbar-brand { display: flex; align-items: center; gap: 10px; }
+            .topbar-logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, var(--primary), #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(91, 108, 245, 0.35); }
+            .topbar-title { font-size: 0.97rem; font-weight: 800; color: var(--text); }
+            .topbar-sub { font-size: 0.75rem; color: var(--text3); font-weight: 400; margin-left: 4px; }
+            .btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; background: var(--primary-light); color: var(--primary); border: none; cursor: pointer; text-decoration: none; transition: all 0.18s; }
+            .btn-back:hover { background: var(--primary); color: white; }
+            .layout { display: flex; padding-top: 60px; min-height: 100vh; }
+            .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: sticky; top: 60px; height: calc(100vh - 60px); overflow-y: auto; padding: 20px 12px; border-right: 1.5px solid var(--border); background: var(--surface); }
+            .sidebar::-webkit-scrollbar { width: 4px; }
+            .sidebar::-webkit-scrollbar-thumb { background: #d1d9f0; border-radius: 99px; }
+            .nav-section-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.2px; color: var(--text3); margin: 16px 0 5px 10px; }
+            .nav-section-label:first-child { margin-top: 4px; }
+            .nav-link { display: flex; align-items: center; gap: 9px; padding: 8px 12px; border-radius: 9px; text-decoration: none; font-size: 0.84rem; font-weight: 600; color: var(--text2); transition: all 0.16s; margin-bottom: 2px; cursor: pointer; border: none; background: none; width: 100%; text-align: left; }
+            .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+            .nav-link.active { background: var(--primary); color: white; box-shadow: 0 2px 10px rgba(91, 108, 245, 0.35); }
+            .main { flex: 1; padding: 40px 48px 80px; max-width: 1260px; }
+            .hero { background: linear-gradient(135deg, var(--navy) 0%, #2d3561 50%, #1e2875 100%); border-radius: 20px; padding: 44px 44px 40px; margin-bottom: 40px; position: relative; overflow: hidden; animation: fadeInUp 0.6s ease both; }
+            .hero::before { content: ""; position: absolute; top: -60px; right: -60px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, rgba(91, 108, 245, 0.25) 0%, transparent 70%); pointer-events: none; }
+            .hero::after { content: "🏓"; position: absolute; right: 44px; bottom: 24px; font-size: 80px; opacity: 0.12; line-height: 1; pointer-events: none; }
+            .hero-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(91, 108, 245, 0.3); color: #c7ccff; border: 1px solid rgba(91, 108, 245, 0.5); border-radius: 100px; padding: 4px 12px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 16px; animation: slideIn 0.5s 0.1s ease both; }
+            .hero h1 { font-size: 1.9rem; font-weight: 900; color: white; line-height: 1.3; margin-bottom: 10px; }
+            .hero h1 span { color: #93c5fd; }
+            .hero-desc { font-size: 0.9rem; color: rgba(255, 255, 255, 0.7); line-height: 1.8; max-width: 480px; }
+            .hero-steps { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+            .hero-step { display: inline-flex; align-items: center; gap: 7px; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.22); border-radius: 100px; padding: 6px 14px; cursor: pointer; transition: all 0.18s; }
+            .hero-step:hover { background: rgba(255, 255, 255, 0.22); transform: translateY(-1px); }
+            .hero-step span { font-size: 0.8rem; color: rgba(255, 255, 255, 0.92); font-weight: 600; }
+            .section { margin-bottom: 56px; }
+            .section-anchor { display: block; height: 0; visibility: hidden; }
+            .section-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; }
+            .step-badge { min-width: 42px; height: 42px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1rem; flex-shrink: 0; }
+            .step-badge.blue { background: var(--primary-light); color: var(--primary); }
+            .step-badge.red { background: var(--accent-light); color: var(--accent); }
+            .step-badge.gold { background: var(--gold-light); color: #d97706; }
+            .step-badge.green { background: var(--green-light); color: #059669; }
+            .step-badge.purple { background: #f3e8ff; color: #7c3aed; }
+            .step-badge.navy { background: #e8eaf8; color: var(--navy); }
+            .section-header-text h2 { font-size: 1.28rem; font-weight: 900; color: var(--text); }
+            .section-header-text p { font-size: 0.82rem; color: var(--text3); margin-top: 2px; }
+            .card { background: var(--surface); border-radius: var(--radius); border: 1.5px solid var(--border); padding: 22px; box-shadow: var(--shadow); margin-bottom: 14px; }
+            .card-title { font-size: 0.88rem; font-weight: 800; color: var(--text); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+            .steps-flow { display: flex; flex-direction: column; gap: 0; }
+            .step-item { display: flex; gap: 18px; position: relative; padding-bottom: 22px; }
+            .step-item:last-child { padding-bottom: 0; }
+            .step-item:last-child .step-line { display: none; }
+            .step-left { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+            .step-dot { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), #7c3aed); display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 0.82rem; box-shadow: 0 3px 10px rgba(91, 108, 245, 0.3); flex-shrink: 0; z-index: 1; }
+            .step-dot.accent { background: linear-gradient(135deg, var(--accent), #c2410c); }
+            .step-dot.gold { background: linear-gradient(135deg, var(--gold), #d97706); }
+            .step-dot.green { background: linear-gradient(135deg, var(--green), #059669); }
+            .step-line { width: 2px; flex: 1; margin-top: 4px; background: linear-gradient(to bottom, var(--primary-light), transparent); min-height: 16px; }
+            .step-content { flex: 1; padding-top: 5px; }
+            .step-content h3 { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-bottom: 5px; }
+            .step-content p { font-size: 0.84rem; color: var(--text2); line-height: 1.75; }
+
+                        /* ── WHITE MOCK ── */
+            .mock-screen { background: #f4f6fc; border-radius: 12px; padding: 3px; box-shadow: 0 4px 20px rgba(26, 31, 54, 0.1); border: 1.5px solid var(--border); margin: 14px 0; overflow: hidden; }
+            .mock-titlebar { background: white; padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); border-radius: 9px 9px 0 0; }
+            .mock-dot { width: 9px; height: 9px; border-radius: 50%; }
+            .mock-dot.red { background: #ef4444; }
+            .mock-dot.yellow { background: #f59e0b; }
+            .mock-dot.green { background: #10b981; }
+            .mock-url { flex: 1; background: #f4f6fc; border-radius: 5px; height: 22px; font-size: 0.65rem; color: var(--text3); display: flex; align-items: center; padding: 0 8px; border: 1px solid var(--border); }
+            .mock-body { background: white; border-radius: 0 0 9px 9px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+            .mock-topbar { background: white; border: 1.5px solid var(--border); border-radius: 10px; padding: 9px 14px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); }
+            .mock-topbar-logo { width: 26px; height: 26px; border-radius: 6px; background: linear-gradient(135deg, var(--primary), #7c3aed); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+            .mock-topbar-name { font-size: 0.76rem; font-weight: 800; color: var(--text); margin-left: 7px; }
+            .mock-actions { display: flex; gap: 5px; }
+            .mock-btn { padding: 4px 9px; border-radius: 6px; font-size: 0.68rem; font-weight: 700; border: 1.5px solid var(--border); background: var(--bg); color: var(--text2); white-space: nowrap; }
+            .mock-btn.primary { background: var(--primary); color: white; border-color: var(--primary); }
+            .mock-btn.red { background: var(--accent); color: white; border-color: var(--accent); }
+            .mock-hero-bar { background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+            .mock-hero-title { font-size: 0.76rem; font-weight: 900; color: white; }
+            .mock-hero-sub { font-size: 0.62rem; color: rgba(255, 255, 255, 0.7); }
+            .mock-hero-btns { display: flex; gap: 4px; flex-wrap: wrap; }
+            .mock-hero-btn { background: rgba(255, 255, 255, 0.18); color: white; border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 6px; padding: 3px 8px; font-size: 0.62rem; font-weight: 700; white-space: nowrap; }
+            .mock-hero-btn.hl { background: linear-gradient(135deg, #ef4444, #b91c1c); border-color: rgba(255, 255, 255, 0.4); font-size: 0.7rem; }
+            .mock-group-header { background: white; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px 12px; display: flex; align-items: center; justify-content: space-between; }
+            .mock-badge-pill { background: linear-gradient(135deg, var(--primary), #7c3aed); color: white; border-radius: 6px; padding: 3px 9px; font-size: 0.68rem; font-weight: 800; }
+            .mock-print-btn { background: white; border: 1.5px solid #7c3aed; color: #7c3aed; border-radius: 6px; padding: 3px 9px; font-size: 0.68rem; font-weight: 700; }
+            .mock-card-row { display: flex; gap: 7px; align-items: stretch; }
+            .mock-matrix-wrap, .mock-stand-wrap { flex: 1; background: white; border: 1.5px solid var(--border); border-radius: 8px; padding: 7px; }
+            .mock-section-label { font-size: 0.6rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); margin-bottom: 5px; }
+            .mock-table { width: 100%; border-collapse: collapse; font-size: 0.66rem; }
+            .mock-table th, .mock-table td { border: 1px solid var(--border); padding: 3px 5px; text-align: center; color: var(--text2); }
+            .mock-table th { background: #f4f6fc; font-weight: 700; color: var(--text3); }
+            .mock-table .win { color: #059669; font-weight: 700; }
+            .mock-table .lose { color: var(--accent); }
+            .mock-badge { display: inline-block; padding: 2px 5px; border-radius: 4px; font-size: 0.6rem; font-weight: 700; }
+            .mock-badge.promote { background: var(--green-light); color: #059669; }
+            .mock-badge.elim { background: var(--accent-light); color: var(--accent); }
+            .mock-tourney { display: flex; gap: 8px; align-items: flex-start; }
+            .mock-round { flex: 1; display: flex; flex-direction: column; gap: 6px; }
+            .mock-round-label { text-align: center; font-size: 0.62rem; color: var(--primary); font-weight: 800; padding: 3px; background: var(--primary-light); border-radius: 5px; border: 1px solid var(--primary); }
+            .mock-match { background: white; border: 1.5px solid var(--border); border-radius: 7px; overflow: hidden; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); }
+            .mock-match-row { padding: 5px 8px; font-size: 0.68rem; color: var(--text2); display: flex; align-items: center; gap: 5px; }
+            .mock-match-row:first-child { border-bottom: 1px solid var(--border); }
+            .mock-match-row.winner { background: #f0fdf4; color: #059669; font-weight: 700; }
+            .radio-circle { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--border); flex-shrink: 0; }
+            .mock-match-row.winner .radio-circle { border-color: #059669; background: #059669; }
+            .mock-print-circle { width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.6rem; background: white; flex-shrink: 0; }
+            .mock-print-circle.active { background: #f97316; border-color: #f97316; color: white; }
+            .mock-arrow { display: flex; align-items: center; color: var(--border); font-size: 0.9rem; padding-top: 32px; }
+            .mock-save-modal { background: white; border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; box-shadow: var(--shadow-lg); max-width: 280px; margin: 0 auto; }
+            .mock-save-title { font-size: 0.78rem; font-weight: 900; color: var(--text); text-align: center; margin-bottom: 10px; }
+            .mock-input-label { font-size: 0.62rem; font-weight: 700; color: var(--text3); margin-bottom: 3px; }
+            .mock-input-field { width: 100%; height: 28px; border: 1.5px solid var(--primary); border-radius: 6px; background: var(--bg); display: flex; align-items: center; padding: 0 8px; font-size: 0.68rem; color: var(--text2); margin-bottom: 8px; }
+            .mock-list-item { display: flex; align-items: center; gap: 8px; padding: 6px 9px; border-radius: 7px; border: 1.5px solid var(--border); background: var(--bg); margin-bottom: 4px; }
+            .mock-list-item.sel { background: #dbeafe; border-color: #3b82f6; }
+            .mock-list-title { flex: 1; font-size: 0.68rem; font-weight: 700; color: var(--text); }
+            .mock-list-date { font-size: 0.6rem; color: var(--text3); }
+            .mock-sel-badge { background: var(--primary); color: white; border-radius: 4px; padding: 1px 6px; font-size: 0.6rem; font-weight: 700; }
+            .mock-save-btn { width: 100%; padding: 6px; border-radius: 7px; font-size: 0.72rem; font-weight: 800; background: var(--primary); color: white; text-align: center; margin-top: 7px; }
+
+                        /* ── BOXES ── */
+            .box { border-radius: 10px; padding: 12px 14px; margin: 10px 0; display: flex; gap: 10px; align-items: flex-start; font-size: 0.84rem; line-height: 1.7; }
+            .box-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+            .box.tip { background: #eef0fe; border-left: 3px solid var(--primary); }
+            .box.tip .box-text { color: #3b4fd8; }
+            .box.warn { background: #fff7ed; border-left: 3px solid var(--gold); }
+            .box.warn .box-text { color: #92400e; }
+            .box.danger { background: #fee2e2; border-left: 3px solid var(--accent); }
+            .box.danger .box-text { color: #991b1b; }
+            .box.success { background: #d1fae5; border-left: 3px solid var(--green); }
+            .box.success .box-text { color: #065f46; }
+            .box-text strong { font-weight: 800; }
+            .example { background: linear-gradient(135deg, #f8f9ff, #f0f2ff); border: 1.5px dashed #c7cdf8; border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+            .example-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: var(--primary); margin-bottom: 7px; }
+            .example-content { font-size: 0.84rem; color: var(--text2); line-height: 1.8; }
+            .example-content code { background: rgba(91, 108, 245, 0.12); color: var(--primary); border-radius: 5px; padding: 1px 6px; font-family: monospace; font-size: 0.85em; font-weight: 700; }
+            .feat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 8px; }
+            .feat-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; transition: all 0.18s; }
+            .feat-item:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(91, 108, 245, 0.12); }
+            .feat-emoji { font-size: 1.5rem; margin-bottom: 7px; }
+            .feat-title { font-size: 0.88rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+            .feat-desc { font-size: 0.78rem; color: var(--text3); line-height: 1.6; }
+            .faq-list { display: flex; flex-direction: column; gap: 8px; }
+            .faq-item { background: var(--surface); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.18s; }
+            .faq-item.open { border-color: var(--primary); }
+            .faq-q { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; font-size: 0.88rem; font-weight: 700; color: var(--text); gap: 12px; }
+            .faq-q:hover { color: var(--primary); }
+            .faq-arrow { width: 24px; height: 24px; border-radius: 6px; background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 0.68rem; color: var(--text3); flex-shrink: 0; transition: transform 0.25s; }
+            .faq-item.open .faq-arrow { transform: rotate(180deg); background: var(--primary-light); color: var(--primary); }
+            .faq-a { max-height: 0; overflow: hidden; transition: max-height 0.32s ease, padding 0.2s; font-size: 0.84rem; color: var(--text2); line-height: 1.8; padding: 0 16px; }
+            .faq-item.open .faq-a { max-height: 320px; padding: 0 16px 14px; }
+            .warn-section { background: linear-gradient(135deg, #fff5f5, #fff0f0); border: 2px solid #fca5a5; border-radius: 16px; padding: 24px; margin-bottom: 22px; }
+            .warn-section h3 { font-size: 1rem; font-weight: 900; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+            .warn-list { display: flex; flex-direction: column; gap: 9px; }
+            .warn-list-item { display: flex; align-items: flex-start; gap: 9px; font-size: 0.84rem; color: #7f1d1d; line-height: 1.7; }
+            .warn-list-item::before { content: "⚠️"; flex-shrink: 0; margin-top: 1px; }
+            .quick-ref { background: linear-gradient(135deg, var(--navy), var(--navy2)); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+            .quick-ref h3 { font-size: 0.95rem; font-weight: 900; color: white; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+            .shortcut-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 7px; }
+            .shortcut-item { display: flex; align-items: center; gap: 9px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 9px; padding: 10px 12px; }
+            .shortcut-emoji { font-size: 1.1rem; flex-shrink: 0; }
+            .shortcut-text { font-size: 0.78rem; color: rgba(255, 255, 255, 0.75); line-height: 1.4; }
+            .shortcut-text strong { color: white; font-weight: 700; display: block; }
+            .divider { height: 1.5px; background: linear-gradient(to right, var(--border), transparent); margin: 40px 0; }
+            .breadcrumb { display: flex; align-items: center; gap: 6px; font-size: 0.75rem; color: var(--text3); margin-bottom: 24px; }
+            .breadcrumb a { color: var(--primary); text-decoration: none; font-weight: 600; }
+            .breadcrumb a:hover { text-decoration: underline; }
+            .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.48s ease, transform 0.48s ease; }
+            .reveal.visible { opacity: 1; transform: translateY(0); }
+            @keyframes fadeInUp {
+                from { opacity: 0; transform: translateY(22px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes slideIn {
+                from { opacity: 0; transform: translateX(-14px); }
+                to { opacity: 1; transform: translateX(0); }
+            }
+            @media (max-width:960px) {
+                .main { padding: 28px 20px 60px; }
+                .feat-grid { grid-template-columns: 1fr; }
+                .shortcut-grid { grid-template-columns: 1fr; }
+            }
+            @media (max-width:720px) {
+                .sidebar { display: none; }
+                .hero h1 { font-size: 1.4rem; }
+                .hero { padding: 26px 20px; }
+            }
+		</style>
+	</head>
+	<body>
+		<div class="topbar">
+			<div class="topbar-brand">
+				<div class="topbar-logo">🏓</div>
+				<span class="topbar-title">용문리그·토너먼트</span>
+				<span class="topbar-sub">사용 가이드</span>
+			</div>
+			<a href="/" class="btn-back">← 운영시스템으로</a>
+		</div>
+
+		<div class="layout">
+			<nav class="sidebar">
+				<div class="nav-section-label">시작하기</div>
+				<button class="nav-link active" onclick="navGo('intro')"><span>🏠</span> 소개 및 전체 흐름</button>
+				<div class="nav-section-label">단계별 사용법</div>
+				<button class="nav-link" onclick="navGo('step1')"><span>🆕</span> 1단계 · 새 대회 만들기</button>
+				<button class="nav-link" onclick="navGo('step2')"><span>👥</span> 2단계 · 선수 명단 등록</button>
+				<button class="nav-link" onclick="navGo('step3')"><span>📊</span> 3단계 · 리그전 진행</button>
+				<button class="nav-link" onclick="navGo('step4')"><span>🏆</span> 4단계 · 토너먼트 진행</button>
+				<button class="nav-link" onclick="navGo('step5')"><span>💾</span> 5단계 · 저장 및 기록</button>
+				<div class="nav-section-label">부가 기능</div>
+				<button class="nav-link" onclick="navGo('prize')"><span>🎁</span> 전체 경품 추첨</button>
+				<button class="nav-link" onclick="navGo('tiebreaker')"><span>⚖️</span> 동률 승자 계산</button>
+				<div class="nav-section-label">참고</div>
+				<button class="nav-link" onclick="navGo('caution')"><span>⚠️</span> 주의 사항</button>
+				<button class="nav-link" onclick="navGo('faq')"><span>💬</span> 자주 묻는 질문</button>
+				<button class="nav-link" onclick="navGo('quickref')"><span>⚡</span> 빠른 참조</button>
+			</nav>
+
+			<main class="main">
+				<div class="breadcrumb"><a href="/">운영시스템</a><span>›</span><span>사용 가이드</span></div>
+
+				<!-- HERO -->
+				<div class="hero">
+					<div class="hero-badge">📖 사용자 가이드 v2025.04</div>
+					<h1>용문리그·토너먼트<br /><span>운영시스템 시작하기</span></h1>
+					<p class="hero-desc">
+						리그전 결과 관리부터 토너먼트 대진표, 경품 추첨까지 — 처음 사용하시는 분도 쉽게 따라할 수 있는 단계별 안내입니다.
+					</p>
+					<div class="hero-steps">
+						<div class="hero-step" onclick="navGo('step1')"><span>① 대회 만들기</span></div>
+						<div class="hero-step" onclick="navGo('step2')"><span>② 명단 등록</span></div>
+						<div class="hero-step" onclick="navGo('step3')"><span>③ 리그전</span></div>
+						<div class="hero-step" onclick="navGo('step4')"><span>④ 토너먼트</span></div>
+						<div class="hero-step" onclick="navGo('step5')"><span>⑤ 저장</span></div>
+					</div>
+				</div>
+
+				<!-- INTRO -->
+				<div class="section reveal" id="sec-intro">
+					<a id="intro" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge navy">🏓</div>
+						<div class="section-header-text">
+							<h2>이 시스템은 어떻게 사용하나요?</h2>
+							<p>전체 운영 흐름을 먼저 파악하면 훨씬 쉬워집니다</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">🗺️ 전체 운영 흐름</div>
+						<div class="steps-flow">
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot">1</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>대회 기본 정보 설정</h3>
+									<p>날짜, 대회명, 조 수, 조별 인원, 탈락 인원, 경기 방식(2선승/3선승)을 입력합니다.</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot">2</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>선수 명단 등록</h3>
+									<p>
+										각 조에 선수를 입력하거나 <strong>한번에 등록</strong>으로 단체카톡 명단을 붙여넣기합니다. 자동으로 조에 균등
+										배분됩니다.
+									</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot">3</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>리그전(조별 예선) 진행</h3>
+									<p>
+										각 조의 결과 매트릭스에 경기 결과를 입력하면 순위가 자동으로 계산됩니다. 드래그&amp;드롭으로 순위 수동 조정도
+										가능합니다.
+									</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot accent">4</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>토너먼트(단판 결선) 진행</h3>
+									<p>
+										리그전 순위를 바탕으로 단판 토너먼트 대진표가 자동 생성됩니다. 같은 조끼리는 1회전에서 만나지 않도록 자동
+										배치됩니다.
+									</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left"><div class="step-dot gold">5</div></div>
+								<div class="step-content">
+									<h3>저장 및 기록 보관</h3>
+									<p>💾 저장 버튼으로 언제든지 저장하고, 📋 기록 버튼으로 과거 대회를 불러올 수 있습니다.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="feat-grid">
+						<div class="feat-item">
+							<div class="feat-emoji">📊</div>
+							<div class="feat-title">자동 순위 계산</div>
+							<div class="feat-desc">승점 → 승자승 → 세트득실 → 상위부 순으로 자동 계산됩니다</div>
+						</div>
+						<div class="feat-item">
+							<div class="feat-emoji">🏆</div>
+							<div class="feat-title">토너먼트 자동 배치</div>
+							<div class="feat-desc">리그 순위 기반 시드 배정, 같은 조 1회전 충돌 자동 회피</div>
+						</div>
+						<div class="feat-item">
+							<div class="feat-emoji">🎁</div>
+							<div class="feat-title">경품 추첨 연동</div>
+							<div class="feat-desc">리그전 명단이 경품 추첨 페이지로 가나다순 자동 전달</div>
+						</div>
+						<div class="feat-item">
+							<div class="feat-emoji">🖨️</div>
+							<div class="feat-title">인쇄 기능</div>
+							<div class="feat-desc">전체 명단, 조별 대진표, 토너먼트 경기 카드 인쇄 지원</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<!-- STEP 1 -->
+				<div class="section reveal" id="sec-step1">
+					<a id="step1" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge blue">1</div>
+						<div class="section-header-text">
+							<h2>새 대회 만들기</h2>
+							<p>첫 화면에서 ➕ 새 대회 시작 버튼을 클릭하세요</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">⚙️ 대회 설정 화면</div>
+						<div class="mock-screen">
+							<div class="mock-titlebar">
+								<div class="mock-dot red"></div>
+								<div class="mock-dot yellow"></div>
+								<div class="mock-dot green"></div>
+								<div class="mock-url">yongmunleage.cafe24app.com · 대회 설정</div>
+							</div>
+							<div class="mock-body">
+								<div class="mock-topbar">
+									<div style="display: flex; align-items: center; gap: 7px">
+										<div class="mock-topbar-logo">🏓</div>
+										<span class="mock-topbar-name">용문 리그 · 토너먼트</span>
+									</div>
+									<div class="mock-actions"><div class="mock-btn">📋 기록</div></div>
+								</div>
+								<div
+									style="
+										background: white;
+										border: 1.5px solid var(--border);
+										border-radius: 10px;
+										padding: 12px 14px;
+										box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+									"
+								>
+									<div
+										style="
+											font-size: 0.62rem;
+											font-weight: 800;
+											text-transform: uppercase;
+											letter-spacing: 0.8px;
+											color: var(--text3);
+											margin-bottom: 9px;
+										"
+									>
+										대회 설정
+									</div>
+									<div style="display: grid; grid-template-columns: 1fr 2fr; gap: 6px; margin-bottom: 6px">
+										<div
+											style="
+												background: var(--bg);
+												border: 1.5px solid var(--border);
+												border-radius: 6px;
+												padding: 5px 8px;
+												font-size: 0.65rem;
+												color: var(--text3);
+											"
+										>
+											날짜 <span style="color: var(--text2); font-weight: 700">2025-04-19</span>
+										</div>
+										<div
+											style="
+												background: var(--bg);
+												border: 1.5px solid var(--primary);
+												border-radius: 6px;
+												padding: 5px 8px;
+												font-size: 0.65rem;
+												color: var(--text3);
+											"
+										>
+											대회명 <span style="color: var(--primary); font-weight: 700">은행나무부</span>
+										</div>
+									</div>
+									<div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-bottom: 9px">
+										<div
+											style="
+												background: var(--bg);
+												border: 1.5px solid var(--border);
+												border-radius: 6px;
+												padding: 5px 8px;
+												font-size: 0.65rem;
+												color: var(--text3);
+											"
+										>
+											조 개수 <span style="color: var(--text); font-weight: 700">4</span>
+										</div>
+										<div
+											style="
+												background: var(--bg);
+												border: 1.5px solid var(--border);
+												border-radius: 6px;
+												padding: 5px 8px;
+												font-size: 0.65rem;
+												color: var(--text3);
+											"
+										>
+											조별인원 <span style="color: var(--text); font-weight: 700">8</span>
+										</div>
+										<div
+											style="
+												background: var(--bg);
+												border: 1.5px solid var(--border);
+												border-radius: 6px;
+												padding: 5px 8px;
+												font-size: 0.65rem;
+												color: var(--text3);
+											"
+										>
+											탈락 <span style="color: var(--text); font-weight: 700">1</span>
+										</div>
+									</div>
+									<div class="mock-btn primary" style="width: 100%; text-align: center; padding: 6px; display: block">
+										1단계: 선수 명단 입력창 생성
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="box warn">
+							<span class="box-icon">⚠️</span>
+							<div class="box-text">
+								<strong>대회명은 필수 입력입니다.</strong> 비워두면 다음 단계로 넘어가지 않습니다. 저장 목록과 브라우저 탭 제목에
+								표시됩니다.
+							</div>
+						</div>
+					</div>
+					<div class="example">
+						<div class="example-label">💡 입력 예시</div>
+						<div class="example-content">
+							날짜: <code>2025-04-19</code> · 대회명: <code>은행나무부</code><br />조 개수: <code>4</code> · 조별 인원: <code>8</code> ·
+							탈락 인원: <code>1</code> · 경기 방식: <code>2선승</code>
+						</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">💡</span>
+						<div class="box-text">
+							<strong>탈락 인원</strong>은 각 조에서 토너먼트에 진출하지 못하는 인원 수입니다. 조별 8명에 탈락 1명이면 7명이 토너먼트에
+							진출합니다.
+						</div>
+					</div>
+				</div>
+
+				<!-- STEP 2 -->
+				<div class="section reveal" id="sec-step2">
+					<a id="step2" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge blue">2</div>
+						<div class="section-header-text">
+							<h2>선수 명단 등록</h2>
+							<p>한 명씩 입력하거나 단체카톡 목록을 한번에 붙여넣기</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">📋 한번에 등록 (권장)</div>
+						<p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 11px">
+							단체카톡에서 선수 목록을 복사해 <strong>📋 한번에 등록</strong> 버튼을 눌러 붙여넣으세요.
+						</p>
+						<div class="mock-screen">
+							<div class="mock-titlebar">
+								<div class="mock-dot red"></div>
+								<div class="mock-dot yellow"></div>
+								<div class="mock-dot green"></div>
+								<div class="mock-url">📋 선수 명단 한번에 등록</div>
+							</div>
+							<div class="mock-body">
+								<div
+									style="
+										background: #fff7ed;
+										border-left: 3px solid var(--gold);
+										border-radius: 6px;
+										padding: 7px 10px;
+										font-size: 0.68rem;
+										color: #92400e;
+									"
+								>
+									한 행에 1명씩 · <strong>이름 소속 등급</strong> 순서로 띄어쓰기 구분<br /><span
+										style="color: var(--primary); font-weight: 700"
+										>· 단체카톡에서 한번에 복사한 텍스트를 붙여넣기하세요!</span
+									>
+								</div>
+								<div
+									style="
+										background: var(--bg);
+										border: 1.5px solid var(--border);
+										border-radius: 6px;
+										padding: 9px;
+										font-size: 0.68rem;
+										color: var(--text2);
+										line-height: 1.9;
+										font-family: monospace;
+									"
+								>
+									홍길동 조아 2<br />김철수 나라 4<br />이영희 다가 3<br />박민준 라마 1
+								</div>
+								<div class="mock-btn primary" style="text-align: center; padding: 6px; display: block">✔ 입력</div>
+							</div>
+						</div>
+						<div class="box success">
+							<span class="box-icon">✅</span>
+							<div class="box-text">
+								<strong>자동 배분 규칙:</strong> 등급 숫자가 낮을수록 강한 선수로 간주되며, 상위부부터 각 조에 골고루 배치됩니다. 같은
+								소속 선수는 가능한 다른 조로 분산됩니다.
+							</div>
+						</div>
+					</div>
+					<div class="example">
+						<div class="example-label">💡 입력 형식</div>
+						<div class="example-content">
+							<code>이름 소속 등급</code> → 예) <code>홍길동 조아 2</code><br />소속 없이: <code>홍길동 2</code> · 등급 없이:
+							<code>홍길동 조아</code> · 이름만: <code>홍길동</code>
+						</div>
+					</div>
+					<div class="box warn">
+						<span class="box-icon">⚠️</span>
+						<div class="box-text">
+							<strong>중복 이름 주의!</strong> 같은 이름이 입력되면 빨간색으로 표시됩니다. 반드시 수정 후 다음 단계로 진행하세요.
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">✏️ 리그전 도중 명단 수정</div>
+						<p style="font-size: 0.84rem; color: var(--text2)">
+							배너의 <strong>✏️ 명단 한번에 수정</strong>으로 취소 명단과 새 명단을 대응시켜 변경할 수 있습니다. 빈 자리는 자동으로
+							<strong>공석(최하위)</strong>으로 처리됩니다.
+						</p>
+					</div>
+				</div>
+
+				<!-- STEP 3 -->
+				<div class="section reveal" id="sec-step3">
+					<a id="step3" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge green">3</div>
+						<div class="section-header-text">
+							<h2>리그전(조별 예선) 진행</h2>
+							<p>결과 매트릭스에 경기 결과를 입력하면 순위가 자동 계산됩니다</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">📊 리그전 대진표 화면</div>
+						<div class="mock-screen">
+							<div class="mock-titlebar">
+								<div class="mock-dot red"></div>
+								<div class="mock-dot yellow"></div>
+								<div class="mock-dot green"></div>
+								<div class="mock-url">yongmunleage.cafe24app.com · 리그전 대진표</div>
+							</div>
+							<div class="mock-body">
+								<div class="mock-hero-bar">
+									<div>
+										<div class="mock-hero-title">🏓 은행나무부</div>
+										<div class="mock-hero-sub">2025-04-19 · 리그전 대진표 · 4개 조 · 조별 8명</div>
+									</div>
+									<div class="mock-hero-btns">
+										<div class="mock-hero-btn">✏️ 명단수정</div>
+										<div class="mock-hero-btn">🗒️ 전체명단인쇄</div>
+										<div class="mock-hero-btn hl">🏆 토너먼트 진행</div>
+									</div>
+								</div>
+								<div class="mock-group-header">
+									<div class="mock-badge-pill">1조</div>
+									<div class="mock-print-btn">🖨️ 대진표 인쇄</div>
+								</div>
+								<div class="mock-card-row">
+									<div class="mock-matrix-wrap">
+										<div class="mock-section-label">결과 매트릭스</div>
+										<table class="mock-table">
+											<thead>
+												<tr>
+													<th>선수</th>
+													<th>홍길동(2)</th>
+													<th>김철수(4)</th>
+													<th>박민준(1)</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>홍길동(2)</td>
+													<td style="background: #f0fdf4">—</td>
+													<td class="win">2:0</td>
+													<td class="lose">0:2</td>
+												</tr>
+												<tr>
+													<td>김철수(4)</td>
+													<td class="lose">0:2</td>
+													<td>—</td>
+													<td class="lose">1:2</td>
+												</tr>
+												<tr>
+													<td>박민준(1)</td>
+													<td class="win">2:0</td>
+													<td class="win">2:1</td>
+													<td>—</td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+									<div class="mock-stand-wrap">
+										<div class="mock-section-label">순위표</div>
+										<table class="mock-table">
+											<thead>
+												<tr>
+													<th>이름</th>
+													<th>전적</th>
+													<th>득실</th>
+													<th>순위</th>
+													<th>결과</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>박민준(1)</td>
+													<td class="win">2/0</td>
+													<td class="win">+4</td>
+													<td><strong>1</strong></td>
+													<td><span class="mock-badge promote">진출</span></td>
+												</tr>
+												<tr>
+													<td>홍길동(2)</td>
+													<td>1/1</td>
+													<td>0</td>
+													<td><strong>2</strong></td>
+													<td><span class="mock-badge promote">진출</span></td>
+												</tr>
+												<tr>
+													<td>김철수(4)</td>
+													<td class="lose">0/2</td>
+													<td class="lose">-4</td>
+													<td><strong>3</strong></td>
+													<td><span class="mock-badge elim">탈락</span></td>
+												</tr>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+						<p style="font-size: 0.84rem; color: var(--text2); margin-top: 8px">
+							각 셀의 드롭다운에서 세트 스코어를 선택하면 상대방 셀이 자동으로 반영됩니다.
+						</p>
+					</div>
+					<div class="card">
+						<div class="card-title">🏅 순위 결정 기준 (동률 시)</div>
+						<div class="steps-flow">
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot" style="font-size: 0.68rem; width: 30px; height: 30px">1</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>승점</h3>
+									<p>승 = 2점, 패 = 1점</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot" style="font-size: 0.68rem; width: 30px; height: 30px">2</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>동률자 간 승자 (승자승)</h3>
+									<p>동점자들끼리의 직접 경기 결과</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot" style="font-size: 0.68rem; width: 30px; height: 30px">3</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>세트 득실</h3>
+									<p>동률자 간 세트 득점 - 실점</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left"><div class="step-dot" style="font-size: 0.68rem; width: 30px; height: 30px">4</div></div>
+								<div class="step-content">
+									<h3>등급 (상위부)</h3>
+									<p>숫자가 낮을수록 상위부. 여전히 동률이면 연장자 순으로 수동 확인 필요.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">💡</span>
+						<div class="box-text"><strong>순위 수동 조정:</strong> 순위표의 행을 드래그&amp;드롭으로 원하는 위치로 옮길 수 있습니다.</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">⚖️</span>
+						<div class="box-text">
+							<strong>동률 계산이 복잡할 때:</strong> 배너의 <strong>⚖️ 동률간 승자 계산하기</strong> 도구를 활용하세요.
+						</div>
+					</div>
+				</div>
+
+				<!-- STEP 4 -->
+				<div class="section reveal" id="sec-step4">
+					<a id="step4" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge red">4</div>
+						<div class="section-header-text">
+							<h2>토너먼트 진행</h2>
+							<p>배너 우측의 빨간색 🏆 토너먼트 진행 버튼을 누르세요</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">🎯 토너먼트 대진표 화면</div>
+						<div class="mock-screen">
+							<div class="mock-titlebar">
+								<div class="mock-dot red"></div>
+								<div class="mock-dot yellow"></div>
+								<div class="mock-dot green"></div>
+								<div class="mock-url">yongmunleage.cafe24app.com · 토너먼트 대진표</div>
+							</div>
+							<div class="mock-body">
+								<div
+									style="
+										background: linear-gradient(135deg, #f59e0b, #7c3aed);
+										border-radius: 10px;
+										padding: 9px 14px;
+										display: flex;
+										align-items: center;
+										gap: 9px;
+									"
+								>
+									<span style="font-size: 1.2rem">🏆</span>
+									<div>
+										<div style="font-size: 0.76rem; font-weight: 900; color: white">은행나무부</div>
+										<div style="font-size: 0.62rem; color: rgba(255, 255, 255, 0.75)">2025-04-19 · 토너먼트 대진표 · 28강</div>
+									</div>
+								</div>
+								<div class="mock-tourney">
+									<div class="mock-round">
+										<div class="mock-round-label">16강</div>
+										<div class="mock-match">
+											<div class="mock-match-row winner">
+												<div class="radio-circle"></div>
+												<span>박민준(1)</span><span class="mock-print-circle active" style="margin-left: auto">🖨️</span>
+											</div>
+											<div class="mock-match-row">
+												<div class="radio-circle"></div>
+												<span>홍길동(2)</span>
+											</div>
+										</div>
+										<div class="mock-match">
+											<div class="mock-match-row">
+												<div class="radio-circle"></div>
+												<span>이영희(3)</span><span class="mock-print-circle" style="margin-left: auto">🖨️</span>
+											</div>
+											<div class="mock-match-row">
+												<div class="radio-circle"></div>
+												<span>김민수(4)</span>
+											</div>
+										</div>
+									</div>
+									<div class="mock-arrow">→</div>
+									<div class="mock-round">
+										<div class="mock-round-label">8강</div>
+										<div class="mock-match" style="margin-top: 14px">
+											<div class="mock-match-row winner">
+												<div class="radio-circle"></div>
+												<span>박민준(1)</span>
+											</div>
+											<div class="mock-match-row" style="color: var(--text3); font-style: italic">
+												<div class="radio-circle"></div>
+												<span style="font-size: 0.62rem">대기중...</span>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div style="font-size: 0.68rem; color: var(--text3); text-align: center; padding-top: 2px">
+									라디오 버튼 클릭으로 승자를 선택하세요
+								</div>
+							</div>
+						</div>
+						<p style="font-size: 0.84rem; color: var(--text2); margin-top: 8px">
+							각 매치 카드에서 승자를 라디오 버튼으로 선택하면 다음 라운드에 자동으로 이름이 올라갑니다.
+						</p>
+					</div>
+					<div class="card">
+						<div class="card-title">✏️ 1회전 선수명 수정</div>
+						<p style="font-size: 0.84rem; color: var(--text2)">
+							1회전 매치 카드의 선수명은 직접 클릭해서 수정할 수 있습니다. 당일 명단 변경이 생겼을 때 유용합니다.
+						</p>
+						<div class="example">
+							<div class="example-label">💡 입력 형식</div>
+							<div class="example-content">
+								이름만: <code>홍길동</code> · 이름+등급: <code>홍길동(2)</code> 또는 <code>홍길동 2</code>
+							</div>
+						</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">🖨️</span>
+						<div class="box-text">
+							<strong>경기 카드 인쇄:</strong> 각 매치 옆 🖨️ 버튼을 누르면 해당 경기 카드가 인쇄 창으로 열립니다. 한번 클릭하면
+							주황색으로 활성화되어 인쇄 완료 여부를 확인할 수 있습니다.
+						</div>
+					</div>
+					<div class="box warn">
+						<span class="box-icon">⚠️</span>
+						<div class="box-text">
+							<strong>부전승(BYE):</strong> 진출 인원이 2의 거듭제곱(8, 16, 32…)이 아니면 일부 선수에게 부전승이 부여됩니다. 리그전 순위
+							상위 선수부터 차례로 배정됩니다.
+						</div>
+					</div>
+				</div>
+
+				<!-- STEP 5 -->
+				<div class="section reveal" id="sec-step5">
+					<a id="step5" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge gold">5</div>
+						<div class="section-header-text">
+							<h2>저장 및 기록 관리</h2>
+							<p>자동저장 없음 — 💾 버튼으로 직접 저장하세요</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">💾 저장 팝업 사용법</div>
+						<div class="mock-screen">
+							<div class="mock-titlebar">
+								<div class="mock-dot red"></div>
+								<div class="mock-dot yellow"></div>
+								<div class="mock-dot green"></div>
+								<div class="mock-url">💾 저장</div>
+							</div>
+							<div class="mock-body">
+								<div class="mock-save-modal">
+									<div class="mock-save-title">💾 저장</div>
+									<div class="mock-input-label">저장명</div>
+									<div class="mock-input-field">은행나무부</div>
+									<div
+										style="
+											font-size: 0.62rem;
+											font-weight: 800;
+											text-transform: uppercase;
+											letter-spacing: 0.8px;
+											color: var(--text3);
+											margin-bottom: 6px;
+										"
+									>
+										저장된 목록 (덮어쓸 항목 클릭)
+									</div>
+									<div class="mock-list-item sel">
+										<div style="flex: 1">
+											<div class="mock-list-title">
+												은행나무부 <span style="color: var(--primary); font-size: 0.6rem">(현재)</span>
+											</div>
+											<div class="mock-list-date">2025. 4. 19. 오전 10:23</div>
+										</div>
+										<div class="mock-sel-badge">덮어쓰기 선택</div>
+									</div>
+									<div class="mock-list-item">
+										<div style="flex: 1">
+											<div class="mock-list-title">용문부 봄 리그</div>
+											<div class="mock-list-date">2025. 3. 15. 오전 9:10</div>
+										</div>
+									</div>
+									<div class="mock-save-btn">✅ 덮어쓰기</div>
+								</div>
+							</div>
+						</div>
+						<div style="display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap">
+							<div class="box tip" style="margin: 0; flex: 1; min-width: 180px">
+								<span class="box-icon">✅</span>
+								<div class="box-text"><strong>목록 선택 후 저장</strong> → 덮어쓰기</div>
+							</div>
+							<div class="box success" style="margin: 0; flex: 1; min-width: 180px">
+								<span class="box-icon">➕</span>
+								<div class="box-text"><strong>선택 없이 저장</strong> → 새로 저장</div>
+							</div>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">📋 기록 불러오기 및 삭제</div>
+						<p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 9px">
+							상단 툴바의 <strong>📋 기록</strong> 버튼 → 저장된 대회 목록 확인
+						</p>
+						<div class="box tip" style="margin: 0 0 7px 0">
+							<span class="box-icon">📂</span>
+							<div class="box-text"><strong>불러오기:</strong> 목록의 불러오기 버튼 클릭</div>
+						</div>
+						<div class="box warn" style="margin: 0">
+							<span class="box-icon">🗑️</span>
+							<div class="box-text"><strong>삭제:</strong> 체크박스 선택 후 🗑️ 선택삭제로 여러 항목 한번에 삭제</div>
+						</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">📤</span>
+						<div class="box-text">
+							<strong>JSON 내보내기/가져오기:</strong> 전체 데이터를 파일로 백업하고 복원할 수 있습니다. 다른 기기로 이전하거나 긴급
+							백업 시 사용하세요.
+						</div>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<!-- PRIZE -->
+				<div class="section reveal" id="sec-prize">
+					<a id="prize" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge purple">🎁</div>
+						<div class="section-header-text">
+							<h2>전체 경품 추첨</h2>
+							<p>리그전 명단이 자동으로 추첨 페이지에 전달됩니다</p>
+						</div>
+					</div>
+					<div class="card">
+						<div class="card-title">🎲 사용 방법</div>
+						<div class="steps-flow">
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot green" style="font-size: 0.8rem">1</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>🎁 전체경품추첨 버튼 클릭</h3>
+									<p>리그전 배너 또는 첫 화면에서 클릭합니다. 리그전 진행 중이라면 현재 명단이 자동 전달됩니다.</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left">
+									<div class="step-dot green" style="font-size: 0.8rem">2</div>
+									<div class="step-line"></div>
+								</div>
+								<div class="step-content">
+									<h3>경품 등록</h3>
+									<p>경품 이름과 개수를 입력합니다. (예: 치킨 2개, 아메리카노 5개)</p>
+								</div>
+							</div>
+							<div class="step-item">
+								<div class="step-left"><div class="step-dot green" style="font-size: 0.8rem">3</div></div>
+								<div class="step-content">
+									<h3>🎲 경품 랜덤 추첨</h3>
+									<p>버튼 클릭 한번으로 자동 랜덤 추첨이 완료됩니다. 결과는 인쇄할 수 있습니다.</p>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="box tip">
+						<span class="box-icon">💡</span>
+						<div class="box-text">
+							리그전 명단은 <strong>가나다 순으로 자동 정렬</strong>되어 전달됩니다. 명단이 제대로 오지 않으면 팝업을 닫고 다시 버튼을
+							클릭해 보세요.
+						</div>
+					</div>
+				</div>
+
+				<!-- TIEBREAKER -->
+				<div class="section reveal" id="sec-tiebreaker">
+					<a id="tiebreaker" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge purple">⚖️</div>
+						<div class="section-header-text">
+							<h2>동률 승자 계산</h2>
+							<p>복잡한 동률 상황을 빠르게 해결합니다</p>
+						</div>
+					</div>
+					<div class="card">
+						<p style="font-size: 0.84rem; color: var(--text2); margin-bottom: 11px">
+							3명 이상이 동률일 때 <strong>⚖️ 동률간 승자 계산하기</strong> 도구를 사용하세요. 동률 인원 수 설정 → 결과 입력 → 순위 자동
+							계산 순으로 진행합니다.
+						</p>
+						<div class="example">
+							<div class="example-label">💡 이름 입력 형식</div>
+							<div class="example-content">이름+부수 형태: <code>홍길동2</code>, <code>김철수4</code></div>
+						</div>
+					</div>
+				</div>
+
+				<div class="divider"></div>
+
+				<!-- CAUTION -->
+				<div class="section reveal" id="sec-caution">
+					<a id="caution" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge red">⚠️</div>
+						<div class="section-header-text">
+							<h2>주의 사항</h2>
+							<p>반드시 읽어주세요</p>
+						</div>
+					</div>
+					<div class="warn-section">
+						<h3>⚠️ 꼭 지켜주세요</h3>
+						<div class="warn-list">
+							<div class="warn-list-item">
+								<strong>자동 저장이 없습니다.</strong> 결과를 입력한 후에는 반드시 💾 저장 버튼을 눌러주세요. 브라우저를 닫거나
+								새로고침하면 저장하지 않은 내용은 사라집니다.
+							</div>
+							<div class="warn-list-item">
+								<strong>중복 이름은 오류를 유발합니다.</strong> 명단에 같은 이름이 두 번 들어가면 순위 계산과 토너먼트 배정에 오류가
+								발생합니다. 빨간색 경고 표시가 나타나면 즉시 수정하세요.
+							</div>
+							<div class="warn-list-item">
+								<strong>토너먼트로 전환 후 리그전 결과를 수정하면</strong> 토너먼트 대진표가 초기화됩니다. 리그전 결과가 모두 확정된
+								후 토너먼트를 진행하세요.
+							</div>
+							<div class="warn-list-item">
+								<strong>기록 삭제는 복구가 불가능합니다.</strong> 삭제 전 📤 내보내기로 JSON 백업을 해두는 것을 권장합니다.
+							</div>
+							<div class="warn-list-item">
+								<strong>브라우저 여러 탭에서 동시에 사용하지 마세요.</strong> 동시 접속 시 데이터 충돌이 발생할 수 있습니다.
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- FAQ -->
+				<div class="section reveal" id="sec-faq">
+					<a id="faq" class="section-anchor"></a>
+					<div class="section-header">
+						<div class="step-badge navy">💬</div>
+						<div class="section-header-text">
+							<h2>자주 묻는 질문</h2>
+							<p>항목을 클릭하면 답변을 확인할 수 있습니다</p>
+						</div>
+					</div>
+					<div class="faq-list">
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>리그전 도중 선수를 교체하거나 빠지면 어떻게 하나요?</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								배너의 <strong>✏️ 명단 한번에 수정</strong>을 클릭하고, 왼쪽(취소 명단)에 빠지는 선수, 오른쪽(새 명단)에 대체 선수를
+								입력하세요. 새 명단이 적으면 나머지 자리는 <strong>공석(최하위)</strong>으로 처리됩니다.
+							</div>
+						</div>
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>토너먼트에서 같은 조끼리 1회전에서 만나는 것 같아요</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								시스템이 자동으로 같은 조 충돌을 최대 10회 재시도하여 해소합니다. 조 수가 적거나 진출 인원 구조상 불가피한 경우에만
+								같은 조 대전이 발생하며, 이때는 안내 메시지가 표시됩니다.
+							</div>
+						</div>
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>부전승이 엉뚱한 선수에게 배정됐어요</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								부전승은 리그전 순위 상위 선수(각 조 1위부터)에게 자동 배정됩니다. 배정이 이상해 보인다면 토너먼트를 재생성해 보세요.
+							</div>
+						</div>
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>과거 대회 데이터를 다른 기기에서 보려면 어떻게 하나요?</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								📤 내보내기로 JSON 파일을 저장한 뒤, 다른 기기에서 📂 가져오기로 불러오면 됩니다. 또는 데이터가 서버에 저장되어 있다면
+								같은 URL로 접속하면 자동으로 불러와집니다.
+							</div>
+						</div>
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>동률 선수가 많아서 자동 순위 계산이 안 돼요</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								모든 기준(승자승, 세트득실, 등급)이 동일하면 <strong>연장자 우선</strong>으로 수동 확인이 필요합니다. 순위표에 노란색
+								배경이 표시됩니다. 드래그&amp;드롭으로 순위를 직접 지정하세요.
+							</div>
+						</div>
+						<div class="faq-item">
+							<div class="faq-q" onclick="toggleFaq(this)">
+								<span>경품 추첨 페이지에 명단이 제대로 전달되지 않아요</span>
+								<div class="faq-arrow">▼</div>
+							</div>
+							<div class="faq-a">
+								경품 추첨 창을 닫고 다시 🎁 전체경품추첨 버튼을 클릭해 보세요. 팝업 차단 설정이 되어있다면 브라우저에서 팝업을 허용해
+								주세요. 그래도 안 되면 경품 추첨 페이지의 <strong>📋 명단 한번에 입력</strong>으로 직접 입력할 수 있습니다.
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- QUICK REF -->
+				<div class="section reveal" id="sec-quickref">
+					<a id="quickref" class="section-anchor"></a>
+					<div class="quick-ref">
+						<h3>⚡ 빠른 참조 — 주요 버튼 모음</h3>
+						<div class="shortcut-grid">
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">💾</span>
+								<div class="shortcut-text"><strong>저장</strong>상단 툴바 · 수동 저장만 지원</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">📋</span>
+								<div class="shortcut-text"><strong>기록</strong>상단 툴바 · 과거 대회 불러오기/삭제</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">✏️</span>
+								<div class="shortcut-text"><strong>명단 한번에 수정</strong>리그전 배너 · 선수 교체</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">🏆</span>
+								<div class="shortcut-text"><strong>토너먼트 진행</strong>리그전 배너 우측 빨간 버튼</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">🎁</span>
+								<div class="shortcut-text"><strong>전체경품추첨</strong>리그전 배너 · 명단 자동 전달</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">🖨️</span>
+								<div class="shortcut-text"><strong>대진표 인쇄</strong>조별 우측 버튼</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">🗒️</span>
+								<div class="shortcut-text"><strong>전체 명단 인쇄</strong>리그전 배너 · 소속+이름+등급</div>
+							</div>
+							<div class="shortcut-item">
+								<span class="shortcut-emoji">⚖️</span>
+								<div class="shortcut-text"><strong>동률 계산</strong>배너 · 동점자 순위 계산</div>
+							</div>
+						</div>
+					</div>
+					<div class="box success">
+						<span class="box-icon">🏓</span>
+						<div class="box-text">
+							이 가이드로도 해결되지 않는 문제는 <strong>단체카톡</strong>으로 문의해 주세요. 지속적으로 개선하겠습니다. 용문 토요리그를
+							응원합니다!
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+
+		<script>
+			/* ── navGo: window.scrollTo와 이름 충돌 없는 커스텀 스크롤 함수 ── */
+			const NAV_IDS = ["intro", "step1", "step2", "step3", "step4", "step5", "prize", "tiebreaker", "caution", "faq", "quickref"];
+			const SEC_IDS = NAV_IDS.map((id) => "sec-" + id);
+
+			function navGo(anchorId) {
+				const secEl = document.getElementById("sec-" + anchorId);
+				if (!secEl) return;
+				const y = secEl.getBoundingClientRect().top + window.pageYOffset - 72;
+				window.scrollTo({ top: y, behavior: "smooth" });
+				setActive(anchorId);
+			}
+
+			function setActive(anchorId) {
+				document.querySelectorAll(".nav-link").forEach((el, i) => {
+					el.classList.toggle("active", NAV_IDS[i] === anchorId);
+				});
+			}
+
+			/* ── Intersection Observer: reveal 애니메이션 + 네비 자동 하이라이트 ── */
+			const io = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((e) => {
+						if (!e.isIntersecting) return;
+						e.target.classList.add("visible");
+						const idx = SEC_IDS.indexOf(e.target.id);
+						if (idx >= 0) setActive(NAV_IDS[idx]);
+					});
+				},
+				{ threshold: 0.12, rootMargin: "-60px 0px -35% 0px" },
+			);
+
+			document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+			/* ── FAQ 아코디언 ── */
+			function toggleFaq(el) {
+				const item = el.closest(".faq-item");
+				const isOpen = item.classList.contains("open");
+				document.querySelectorAll(".faq-item.open").forEach((i) => i.classList.remove("open"));
+				if (!isOpen) item.classList.add("open");
+			}
+		</script>
+	</body>
+</html>

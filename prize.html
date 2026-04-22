@@ -191,6 +191,12 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
 }
 .prize-cell-input.animate { animation: popIn 0.35s ease forwards; }
 
+/* TABLE CELL CLASSES (JS 인라인 스타일 대체) */
+.tbl-num-cell { font-weight: 700; color: var(--text3); font-size: 0.78rem; }
+.tbl-name-cell { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tbl-divider { width: 1px; padding: 0 !important; background: #c7ccd6; border: none !important; }
+.tbl-th-divider { width: 1px; padding: 0 !important; background: #c7ccd6; border: none !important; }
+
 /* HIDDEN */
 .hidden { display: none !important; }
 .mt16 { margin-top: 16px; }
@@ -269,6 +275,16 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
     </div>
   </div>
 
+  <!-- 제목 입력 -->
+  <div class="card no-print" style="margin-bottom:12px;">
+    <div class="section-label">추첨 제목</div>
+    <input type="text" id="printTitleInput"
+      placeholder="예) 2026 용문리그 경품 추첨 결과"
+      style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:9px 12px;font-size:0.95rem;font-family:inherit;outline:none;color:var(--text);background:var(--surface);"
+      onfocus="this.style.borderColor='var(--primary)'"
+      onblur="this.style.borderColor='var(--border)'">
+  </div>
+
   <!-- 경품 설정 -->
   <div class="card no-print">
     <div class="section-label">경품 등록</div>
@@ -333,7 +349,7 @@ th { background: var(--surface2); font-weight: 700; color: var(--text2); font-si
 
 <script>
 /* ── 데이터 ── */
-window.players = []; // [{name, grade, display}]
+window.players = []; // [{name, grade, affiliation, display}]
 let _prizeStore = []; // 경품 데이터 메모리 저장
 const COLS = window.innerWidth <= 600 ? 2 : 4;   // 표 열 수 (모바일 2열)
 
@@ -519,7 +535,6 @@ function parseBulk(text) {
     return digits ? parseInt(digits) : null;
   }
 
-  // ── 행 순서 그대로 파싱 (정렬 없음 — 입력 순서 = 명단 순서) ──
   const result = [];
   const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
 
@@ -527,32 +542,38 @@ function parseBulk(text) {
     const line = lines[li].trim();
     if (!line) continue;
     const tokens = line.split(/\s+/);
-    let rawName = '', rawGrade = '';
 
-    if (tokens.length >= 3) {
-      const last = tokens[tokens.length - 1];
-      if (/\d/.test(last)) {
-        rawGrade = last;
-        rawName  = tokens.slice(0, tokens.length - 2).join(' ') || tokens[0];
-      } else {
-        rawName = tokens[0];
-      }
-    } else if (tokens.length === 2) {
-      const last = tokens[1];
-      if (/\d/.test(last)) {
-        rawGrade = last; rawName = tokens[0];
-      } else {
-        rawName = tokens[0];
-      }
+    // 맨 앞 순번(숫자/점/하이픈/#) 제거 — 밴드 목록 복사 대응
+    let start = 0;
+    if (tokens.length > 1 && /^[\d.\-#]+$/.test(tokens[0])) start = 1;
+    const parts = tokens.slice(start);
+    if (!parts.length) continue;
+
+    let rawName = '', rawGrade = '', rawAffil = '';
+    const last = parts[parts.length - 1];
+    const lastIsGrade = /^\d/.test(last); // 끝 토큰이 숫자로 시작하면 등급 (2, 2부, 3부 등)
+
+    if (parts.length >= 3 && lastIsGrade) {
+      rawGrade = last;
+      rawName  = parts[0];
+      rawAffil = parts.slice(1, parts.length - 1).join(' ');
+    } else if (parts.length === 2 && lastIsGrade) {
+      rawGrade = last;
+      rawName  = parts[0];
+    } else if (parts.length >= 2) {
+      rawName  = parts[0];
+      rawAffil = parts.slice(1).join(' ');
     } else {
-      rawName = tokens[0] || '';
+      rawName  = parts[0];
     }
 
     const name = cleanName(rawName);
     if (!name) continue;
-    const grade = rawGrade ? cleanGrade(rawGrade) : (cleanGrade(rawName) !== null ? cleanGrade(rawName) : null);
-    const display = grade !== null ? name + '(' + grade + ')' : name;
-    result.push({ name, grade, display });
+    const affiliation = rawAffil.trim();
+    const grade = rawGrade ? cleanGrade(rawGrade) : null;
+    const namePart = grade !== null ? name + '(' + grade + ')' : name;
+    let display = affiliation ? affiliation + ' ' + namePart : namePart;
+    result.push({ name, grade, affiliation, display });
   }
 
   // 가나다 정렬
@@ -599,7 +620,7 @@ function renderTable() {
   for (let c = 0; c < COLS; c++) {
     if (!isMobile) headHtml += `<th style="width:${numPct.toFixed(1)}%">번호</th>`;
     headHtml += `<th style="width:${namePct.toFixed(1)}%">이름</th><th style="width:${prizePct.toFixed(1)}%">경품</th>`;
-    if (c < COLS - 1) headHtml += `<th style="width:1px;padding:0;background:#c7ccd6;border:none;"></th>`;
+    if (c < COLS - 1) headHtml += `<th class="tbl-th-divider"></th>`;
   }
   headHtml += '</tr>';
   thead.innerHTML = headHtml;
@@ -613,14 +634,14 @@ function renderTable() {
       const p = grid[c][r];
       const num = c * rows + r + 1;
       if (p) {
-        if (!isMobile) bodyHtml += `<td style="font-weight:700;color:var(--text3);font-size:0.78rem;">${num}</td>`;
-        bodyHtml += `<td style="font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.display}</td>`;
+        if (!isMobile) bodyHtml += `<td class="tbl-num-cell">${num}</td>`;
+        bodyHtml += `<td class="tbl-name-cell">${p.display}</td>`;
         bodyHtml += `<td><input class="prize-cell-input" data-player="${c * rows + r}" placeholder="" autocomplete="off"></td>`;
       } else {
         if (!isMobile) bodyHtml += `<td></td>`;
         bodyHtml += `<td></td><td></td>`;
       }
-      if (c < COLS - 1) bodyHtml += `<td style="width:1px;padding:0;background:#c7ccd6;border:none;"></td>`;
+      if (c < COLS - 1) bodyHtml += `<td class="tbl-divider"></td>`;
     }
     bodyHtml += '</tr>';
   }
@@ -696,7 +717,7 @@ function drawPrizes() {
 function printResult() {
   const total = players.length;
   if (!total) return;
-  const PRINT_COLS = 4; // 인쇄는 항상 4열 고정
+  const PRINT_COLS = 4;
   const rows = Math.ceil(total / PRINT_COLS);
 
   // 그리드 구성
@@ -715,8 +736,37 @@ function printResult() {
     prizeValues[inp.dataset.player] = inp.value;
   });
 
-  const colW = (100 / PRINT_COLS).toFixed(1);
-  // 경품별 색상 (drawPrizes와 동일 팔레트)
+  // 경품 이모지 매핑
+  const PRIZE_ICONS = {
+    '1등': '🥇', '2등': '🥈', '3등': '🥉',
+    '금': '🥇', '은': '🥈', '동': '🥉',
+    '상품권': '🎫', '기프티콘': '🎫', '교환권': '🎫',
+    '치킨': '🍗', '피자': '🍕', '커피': '☕', '아메리카노': '☕', '카페': '☕',
+    '햄버거': '🍔', '라면': '🍜', '삼겹살': '🥩', '고기': '🥩', '스테이크': '🥩',
+    '케이크': '🎂', '빵': '🍞', '마카롱': '🍬',
+    '쇼핑': '🛍️', '마트': '🛒', '편의점': '🏪',
+    '영화': '🎬', '영화관': '🎬',
+    '여행': '✈️', '숙박': '🏨', '호텔': '🏨',
+    '건강': '💊', '헬스': '💪', '운동': '🏃',
+    '도서': '📚', '책': '📚',
+    '화장품': '💄', '뷰티': '💄',
+    '게임': '🎮', '넥슨': '🎮', '스팀': '🎮',
+    '라켓': '🏓', '탁구': '🏓', '공': '🏓',
+    '특별상': '🏆', '우승': '🏆', '대상': '🏆', '최우수': '🏆',
+    '참가상': '🎁', '선물': '🎁', '경품': '🎁',
+    '현금': '💵', '용돈': '💵', '포인트': '💰',
+    '주류': '🍺', '맥주': '🍺', '와인': '🍷',
+    '과일': '🍎', '식품': '🍱',
+  };
+  function getPrizeIcon(prizeName) {
+    if (!prizeName) return '🎁';
+    for (const key in PRIZE_ICONS) {
+      if (prizeName.includes(key)) return PRIZE_ICONS[key];
+    }
+    return '🎁';
+  }
+
+  // 경품별 색상
   const PRIZE_COLORS_P = [
     '#7c3aed','#0891b2','#059669','#d97706','#e11d48',
     '#2563eb','#ea580c','#065f46','#9333ea','#b45309',
@@ -725,65 +775,75 @@ function printResult() {
   const prizeColorMapP = {};
   savedPrizeRows.forEach((r, i) => { prizeColorMapP[r.name] = PRIZE_COLORS_P[i % PRIZE_COLORS_P.length]; });
 
+  // td 높이 계산 (현재의 90%)
+  const totalPrizes = getPrizeData().reduce((s, r) => s + (r.count || 0), 0);
+  const tdHPt = Math.max(9, Math.floor(457 * 0.9 / rows));
+
+  // 인쇄 제목
+  const customTitle = (document.getElementById('printTitleInput') && document.getElementById('printTitleInput').value.trim())
+    ? document.getElementById('printTitleInput').value.trim()
+    : '용문리그 경품 추첨 결과';
+
+  const prizeDesc = getPrizeData().filter(r=>r.name&&r.count>0).map(r=>r.name+' '+r.count+'개').join(' / ');
+  const subtitleText = '참가자 ' + total + '명 · ' + prizeDesc + ' / 총 ' + totalPrizes + '개';
+
+  // 헤더: 번호 제외, 이름+경품만
+  let thead_html = '<tr>';
+  for (let c = 0; c < PRINT_COLS; c++) {
+    const nameW = (57.6 / PRINT_COLS).toFixed(1);
+    const prizeW = (38.4 / PRINT_COLS).toFixed(1);
+    thead_html += `<th style="width:${nameW}%;text-align:center;">이름</th><th style="width:${prizeW}%;text-align:center;">경품</th>`;
+    if (c < PRINT_COLS - 1) thead_html += `<th style="width:2px;padding:0;border:none;background:#e4e8f0;"></th>`;
+  }
+  thead_html += '</tr>';
+
   let rows_html = '';
   for (let r = 0; r < rows; r++) {
     rows_html += '<tr>';
     for (let c = 0; c < PRINT_COLS; c++) {
       const cell = grid[c][r];
-      const num = c * rows + r + 1;
       if (cell) {
         const prize = prizeValues[cell.idx] || '';
-        const prizeStyle = prize ? 'font-weight:900;' : '';
-        rows_html += `<td style="text-align:center;font-size:9pt;color:#888;">${num}</td>`;
-        rows_html += `<td style="font-weight:600;font-size:9pt;text-align:center;">${cell.player.display}</td>`;
-        rows_html += `<td style="${prizeStyle}font-size:9pt;text-align:center;">${prize || ''}</td>`;
+        const prizeHtml = prize
+          ? `<span style="font-size:13pt;font-weight:500;color:#000;letter-spacing:-1px;">${prize}</span>`
+          : '';
+        rows_html += `<td>${cell.player.display}</td>`;
+        rows_html += `<td>${prizeHtml}</td>`;
       } else {
-        rows_html += '<td></td><td></td><td></td>';
+        rows_html += '<td></td><td></td>';
       }
       if (c < PRINT_COLS - 1) rows_html += `<td style="background:#e4e8f0;width:2px;padding:0;border:none;"></td>`;
     }
     rows_html += '</tr>';
   }
 
-  let thead_html = '<tr>';
-  for (let c = 0; c < PRINT_COLS; c++) {
-    thead_html += `<th style="width:4%;text-align:center;">번호</th><th style="width:${(96/PRINT_COLS/2).toFixed(1)}%;text-align:center;">이름</th><th style="width:${(96/PRINT_COLS/2).toFixed(1)}%;text-align:center;">경품</th>`;
-    if (c < PRINT_COLS - 1) thead_html += `<th style="width:2px;padding:0;border:none;background:#e4e8f0;"></th>`;
-  }
-  thead_html += '</tr>';
-
-  const winnerSummary = Object.values(prizeValues).filter(v => v).length;
-  const totalPrizes = getPrizeData().reduce((s, r) => s + (r.count || 0), 0);
-
-  // td 높이 계산: A4 landscape 가용 높이 ≈ 537pt, 여백 제외 tbody ≈ 457pt
-  const tdHPt = Math.max(10, Math.floor(457 / rows));
-  const prizeDesc = getPrizeData().filter(r=>r.name&&r.count>0).map(r=>r.name+' '+r.count+'개').join(' / ');
-  const subtitleText = '참가자 ' + total + '명 · ' + prizeDesc + ' / 총 ' + totalPrizes + '개';
-
   const printHtml = [
     '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8">',
-    '<title>용문리그 경품 추첨 결과</title>',
+    '<title>' + customTitle + '</title>',
     '<style>',
     '@page { size: A4 landscape; margin: 10mm 12mm 10mm 12mm; }',
     '* { box-sizing: border-box; margin: 0; padding: 0; }',
-    'html, body { font-family: Malgun Gothic, sans-serif; background: #fff; }',
-    'h1 { text-align: center; font-size: 18pt; font-weight: 900; margin-bottom: 4pt; }',
+    'html, body { font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; background: #fff; }',
+    'h1 { text-align: center; font-size: 30pt; font-weight: 900; margin-bottom: 4pt; letter-spacing: -1px; }',
     '.subtitle { text-align: center; font-size: 8pt; color: #666; margin-bottom: 8pt; }',
     'table { width: 100%; border-collapse: collapse; table-layout: fixed; }',
-    'th { background: #ddd; border: 1px solid #000; font-size: 8pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; height:16pt; }',
-    'td { border: 1px solid #ccc; font-size: 9pt; vertical-align: middle; text-align: center; padding: 0 2pt; height:' + tdHPt + 'pt; }',
-    'tr:nth-child(even) td { background: #f0f0f0; }',
-    '.footer-note { text-align:center; font-size:11pt; color:#000; font-weight:normal; margin-top:8pt; }',
-    '.pbtn { display:block; margin:10px auto; padding:8px 28px; font-size:11pt; background:#5b6cf5; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }',
-    '.xclosebtn { position:fixed; top:10px; right:14px; background:#ef4444; color:white; border:none; border-radius:6px; width:30px; height:30px; font-size:15px; cursor:pointer; font-weight:900; z-index:999; }',
-    '@media print { .pbtn { display:none; } .xclosebtn { display:none; } * { color: #000 !important; background: transparent !important; } th { background: #ddd !important; } }',
+    'th { background: #ddd; border: 1px solid #000; font-size: 12pt; font-weight: 800; text-align: center; vertical-align: middle; padding: 0 2pt; height:24pt; }',
+    'td { border: 1px solid #ccc; font-size: 12pt; font-weight:700; vertical-align: middle; text-align: center; padding: 2pt 1pt; height:' + tdHPt + 'pt; letter-spacing:-0.8px; }',
+    'tr:nth-child(even) td { background: #f6f7fb; }',
+    '.footer-note { text-align:center; font-size:9pt; color:#666; font-weight:normal; margin-top:6pt; }',
+    '.btn-row { display:flex; justify-content:center; gap:10px; margin:12px auto; }',
+    '.pbtn { display:inline-flex; align-items:center; padding:8px 28px; font-size:11pt; background:#5b6cf5; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:bold; }',
+    '.pbtn-close { background:#ef4444; }',
+    '@media print { .btn-row { display:none; } tr:nth-child(even) td { background: none; } th { background: #f5f5f5;} * { -webkit-print-color-adjust:exact; print-color-adjust:exact; } }',
     '</style></head><body>',
-    '<button class="xclosebtn" onclick="window.close()">&#x2715;</button>',
-    '<h1>&#127873; 용문리그 경품 추첨 결과</h1>',
+    '<h1>🎁 ' + customTitle + '</h1>',
     '<p class="subtitle">' + subtitleText + '</p>',
     '<table><thead>' + thead_html + '</thead><tbody>' + rows_html + '</tbody></table>',
     '<p class="footer-note">경품 추첨은 컴퓨터에서 자동으로 랜덤하게 추첨됩니다.</p>',
-    '<button class="pbtn" onclick="window.print()">&#128424;&#65039; 인쇄</button>',
+    '<div class="btn-row">',
+    '  <button class="pbtn" onclick="window.print()">🖨️ 인쇄</button>',
+    '  <button class="pbtn pbtn-close" onclick="window.close()">✕ 닫기</button>',
+    '</div>',
     '</body></html>'
   ].join('');
 
@@ -809,6 +869,69 @@ function confirmBulk() {
   closeBulk();
   renderTable();
 }
+
+/* ── 리그전 명단 자동 주입 ───────────────────────────────────────────
+ *  index.html의 openPrizeWithLeague()가 sessionStorage/postMessage로
+ *  전달한 players 배열을 받아 표를 즉시 렌더링합니다.
+ * ────────────────────────────────────────────────────────────────── */
+
+// ④ 수신된 데이터 유효성 검증: display 필드에 등급이 있으면 반드시 포함
+function validateAndFixPlayers(rawPlayers) {
+  if (!rawPlayers || !rawPlayers.length) return [];
+  return rawPlayers.map(p => {
+    const name  = (p.name || '').trim();
+    if (!name) return null;
+    const grade = (p.grade !== null && p.grade !== undefined && p.grade !== 9999)
+      ? parseInt(p.grade) : null;
+    // display 재구성: 이름(등급) 형식
+    const display = grade !== null ? `${name}(${grade})` : name;
+    return { name, grade, affiliation: p.affiliation || '', display };
+  }).filter(Boolean);
+}
+
+let _leaguePlayersApplied = false; // 중복 수신 방지
+
+function applyLeaguePlayers(playersData, titleData) {
+  const fixed = validateAndFixPlayers(playersData);
+  if (!fixed.length) return;
+
+  // 이미 적용됐으면 내용이 다를 때만 재적용
+  if (_leaguePlayersApplied && window.players && window.players.length === fixed.length) return;
+
+  window.players = fixed;
+  _leaguePlayersApplied = true;
+
+  // 추첨 제목 자동 설정 (비어있을 때만)
+  const titleInp = document.getElementById('printTitleInput');
+  if (titleInp && titleData && !titleInp.value.trim()) {
+    titleInp.value = titleData + ' 경품 추첨';
+  }
+
+  renderTable();
+}
+
+// postMessage 수신 — 처리 후 확인 응답 전송
+window.addEventListener('message', function(e) {
+  if (!e.data || e.data.type !== 'LEAGUE_PLAYERS') return;
+  applyLeaguePlayers(e.data.players, e.data.title);
+  // 수신 확인 응답 (opener가 반복 전송을 멈추도록)
+  try {
+    if (e.source) e.source.postMessage({ type: 'LEAGUE_PLAYERS_OK' }, e.origin || '*');
+  } catch (err) {}
+});
+
+// sessionStorage 수신 (같은 origin 새탭 — 페이지 로드 시 즉시 처리)
+(function() {
+  try {
+    const raw   = sessionStorage.getItem('prizeLeaguePlayers');
+    const title = sessionStorage.getItem('prizeLeagueTitle') || '';
+    if (!raw) return;
+    const parsed = JSON.parse(raw);
+    sessionStorage.removeItem('prizeLeaguePlayers');
+    sessionStorage.removeItem('prizeLeagueTitle');
+    if (parsed && parsed.length) applyLeaguePlayers(parsed, title);
+  } catch (e) {}
+})();
 
 /* ── 이벤트 ── */
 document.getElementById('bulkInputBtn').addEventListener('click', openBulk);

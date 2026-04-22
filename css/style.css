@@ -83,7 +83,7 @@ button:active { transform: scale(0.97); }
 
 .btn-lg { padding: 13px 24px; font-size: 1rem; border-radius: var(--radius-sm); }
 .btn-full { width: 100%; justify-content: center; }
-.btn-sm { padding: 5px 10px; font-size: 0.78rem; border-radius: 6px; }
+.btn-sm { padding: 10px 20px; font-size: 0.95rem; border-radius: 6px; }
 .btn-xs { padding: 4px 8px; font-size: 0.72rem; border-radius: 5px; }
 
 /* ── CARD ── */
@@ -399,6 +399,10 @@ th.sortable:hover { background: var(--primary-light); }
   #tiebreakerModal input[type="text"] { width: 52px !important; font-size: 0.68rem !important; padding: 2px 3px !important; }
   #tiebreakerModal select.matrix-select { min-width: 36px !important; font-size: 0.68rem; width: 100%; }
   #tiebreakerModal #tbStep2 .table-wrap { overflow-x: scroll; }
+  .modal-bg.nameList {
+    align-items: anchor-center;
+    justify-content: start;
+  }
 }
 @media (min-width: 900px) {
   .app-shell { padding: 28px 28px; }
@@ -426,3 +430,7 @@ th.sortable:hover { background: var(--primary-light); }
   border: 2px solid rgba(255,255,255,0.4);
   letter-spacing: 0.5px;
 }
+
+/* Heewon 추가 */
+.title-banner > div:first-child { min-width:225px !important;}
+.title-banner > div:nth-child(2) { flex-shrink:inherit !important;}
