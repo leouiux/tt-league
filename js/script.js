@@ -3318,7 +3318,7 @@ function openPrizeWithLeague() {
 		sessionStorage.setItem("prizeLeagueTitle", leagueTitle);
 	} catch (e) {}
 
-	const prizeWin = window.open("/prize.html", "_blank");
+	const prizeWin = window.open("./prize.html", "_blank");
 
 	// postMessage 전달 — 수신 확인 후 중단 (최대 6회)
 	if (prizeWin && players.length) {
